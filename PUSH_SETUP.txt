@@ -1,0 +1,106 @@
+PUSH NOTIFICATION SETUP
+
+This upgrade uses standard Web Push:
+PWA/website -> Push subscription -> Supabase -> Cron -> Edge Function -> Browser/phone push service -> Notification.
+
+IMPORTANT
+- Push notifications require HTTPS in production. Netlify provides HTTPS.
+- On Android/desktop Chrome/Edge, enable notifications from Backup -> Enable notifications.
+- On iPhone/iPad, install the site to the Home Screen first, then enable notifications. iOS/iPadOS 16.4+ supports Web Push for Home Screen web apps.
+- Enable notifications separately on each device where you want alerts.
+
+STEP 1 — DATABASE MIGRATION
+Supabase -> SQL Editor:
+Run:
+  supabase-notification-migration.sql
+
+STEP 2 — GENERATE VAPID KEYS
+This is a ONE-TIME setup command. Node/npm is only needed to generate these keys:
+  npx web-push generate-vapid-keys
+
+It prints:
+  Public Key:  ...
+  Private Key: ...
+
+Keep the private key secret.
+
+STEP 3 — FRONTEND PUBLIC KEY
+Open:
+  assets/config.js
+
+Paste the VAPID Public Key:
+  vapidPublicKey: "YOUR_PUBLIC_KEY"
+
+Do NOT put the private VAPID key in config.js.
+
+STEP 4 — DEPLOY EDGE FUNCTION
+This folder includes:
+  supabase/functions/send-due-reminders/index.ts
+  supabase/functions/send-due-reminders/deno.json
+
+You can deploy with the Supabase CLI:
+  npx supabase login
+  npx supabase link --project-ref YOUR_PROJECT_REF
+  npx supabase functions deploy send-due-reminders --no-verify-jwt
+
+STEP 5 — EDGE FUNCTION SECRETS
+Create a strong random CRON_SECRET, for example a 32+ character random string.
+
+Set these secrets:
+  npx supabase secrets set VAPID_PUBLIC_KEY="YOUR_PUBLIC_KEY"
+  npx supabase secrets set VAPID_PRIVATE_KEY="YOUR_PRIVATE_KEY"
+  npx supabase secrets set VAPID_SUBJECT="mailto:YOUR_EMAIL"
+  npx supabase secrets set CRON_SECRET="YOUR_RANDOM_CRON_SECRET"
+
+SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are available automatically in hosted Supabase Edge Functions.
+
+STEP 6 — CRON
+Open:
+  cron-setup-template.sql
+
+Replace:
+  YOUR_PROJECT_URL
+  YOUR_CRON_SECRET
+
+The CRON_SECRET must exactly match the Edge Function secret from Step 5.
+
+Run the SQL in Supabase SQL Editor.
+It checks due reminders every minute.
+
+STEP 7 — DEPLOY THE PWA
+Deploy the COMPLETE project folder to Netlify.
+Do not test push by double-clicking index.html because service workers/push require a secure origin.
+Use your HTTPS Netlify URL.
+
+STEP 8 — ENABLE ON EACH DEVICE
+Sign in.
+Go to:
+  Backup -> Enable notifications
+
+Allow notification permission.
+
+TEST
+1. Create a reminder 3-5 minutes in the future.
+2. Choose "At reminder time".
+3. Close the PWA/browser tab.
+4. Wait for the reminder.
+5. A system notification should appear.
+
+REMINDER ALERT OPTIONS
+- At reminder time
+- 15 minutes before
+- 30 minutes before
+- 1 hour before
+- 1 day before
+
+HOW IT WORKS
+- The reminder is stored in Supabase.
+- The device stores a Web Push subscription in push_subscriptions.
+- Supabase Cron invokes send-due-reminders every minute.
+- The Edge Function sends a standard Web Push message to every registered device for the signed-in user.
+- After successful delivery, notification_sent is set to true so it is not sent twice.
+
+SECURITY
+- assets/config.js contains only public values: Supabase publishable/anon key and VAPID public key.
+- VAPID private key and CRON_SECRET are Supabase Edge Function secrets.
+- Never put SUPABASE_SERVICE_ROLE_KEY or a Supabase secret key in browser files.

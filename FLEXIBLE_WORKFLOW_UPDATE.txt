@@ -1,0 +1,22 @@
+FLEXIBLE WORKFLOW UPDATE
+
+What changed:
+- Reminders no longer require a college.
+- Calendar reminders open with the selected date and college is optional.
+- Contacts can be saved with no college, an existing college name, or a new typed college name.
+- Notes/meetings can be saved without a college.
+- Requirements can be saved without a college.
+- All college fields suggest previously used college names.
+- Contacts, notes/meetings, and requirements include an optional checkbox:
+  "Create a college profile if this is a new name".
+- If you type a new college name without checking that box, the activity is still saved with the typed name.
+- Existing linked data is preserved.
+
+Deployment:
+1. Run supabase-flexible-college-migration.sql in Supabase SQL Editor.
+2. Replace the app files in your GitHub project with this version.
+3. If your deployed send-due-reminders Edge Function uses the older code, redeploy the updated index.ts.
+4. git add .
+5. git commit -m "Make college optional across workflows"
+6. git push
+7. Vercel redeploys automatically.

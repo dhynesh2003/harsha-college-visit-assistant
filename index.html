@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#3558d4">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Harsha Visits">
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="assets/styles.css">
+<title>Harsha College Visit Assistant</title>
+</head>
+<body>
+
+<div id="authView" class="auth-screen">
+  <div class="auth-card">
+    <div class="logo large">H</div>
+    <h1>Harsha College Visit Assistant</h1>
+    <p>Sign in to sync the same college data across laptop and phone.</p>
+    <label class="field"><span>Email</span><input id="authEmail" type="email" autocomplete="email"></label>
+    <label class="field"><span>Password</span><input id="authPassword" type="password" autocomplete="current-password"></label>
+    <div class="auth-actions">
+      <button class="btn primary" id="signInBtn">Sign in</button>
+      <button class="btn ghost" id="signUpBtn">Create account</button>
+      <button class="btn soft" id="forgotBtn">Forgot password</button>
+    </div>
+    <div id="configWarning" class="config-warning hidden">Supabase is not configured yet. Open <b>assets/config.js</b> and paste your Project URL and Publishable/anon key.</div>
+  </div>
+</div>
+
+<div id="appView" class="hidden">
+<header class="topbar">
+  <div class="brand"><div class="logo">H</div><div><h1>Harsha College Visit Assistant</h1><p>Meetings, reminders and college planning</p></div></div>
+  <div class="top-actions">
+    <div id="syncBadge" class="sync-badge"><span class="dot"></span><span id="syncText">Connecting</span></div>
+    <button class="btn ghost desktop-only" id="exportTop">Export</button>
+    <button class="btn primary" id="quickAddTop">+ Quick add</button>
+  </div>
+</header>
+
+<div class="shell">
+  <aside class="sidebar desktop-only">
+    <nav class="nav">
+      <button class="active" data-view="today">⌂ Today</button>
+      <button data-view="colleges">▦ Colleges</button>
+      <button data-view="calendar">□ Calendar</button>
+      <button data-view="meetings">✎ Meeting Notes</button>
+      <button data-view="contacts">◉ Contacts</button>
+      <button data-view="reminders">◷ Reminders</button>
+      <button data-view="requirements">≡ Requirements</button>
+      <button data-view="settings">⚙ Backup</button>
+    </nav>
+    <div class="side-info"><span>Signed in as</span><strong id="userEmail"></strong><button class="btn ghost full-btn" id="signOutBtn">Sign out</button></div>
+  </aside>
+
+  <main class="content">
+    <section class="view active" id="today">
+      <div class="page-head"><div><h2>Today</h2><p id="todayDate"></p></div><button class="btn soft desktop-only" data-open="meeting">+ Log meeting</button></div>
+      <div class="stats">
+        <article class="stat"><span>Total colleges</span><strong id="statColleges">0</strong><small>Institutions tracked</small></article>
+        <article class="stat"><span>Today’s activities</span><strong id="statToday">0</strong><small>Meetings and reminders</small></article>
+        <article class="stat"><span>Overdue</span><strong id="statOverdue">0</strong><small>Needs attention</small></article>
+        <article class="stat"><span>High interest</span><strong id="statHigh">0</strong><small>Strong opportunities</small></article>
+      </div>
+      <div class="quick-grid desktop-only">
+        <button class="quick-card" data-open="college"><span class="quick-icon">🏫</span><b>Add college</b><small>College and main contact</small></button>
+        <button class="quick-card" data-open="meeting"><span class="quick-icon">📝</span><b>Meeting notes</b><small>Topic, notes and follow-up</small></button>
+        <button class="quick-card" data-open="reminder"><span class="quick-icon">⏰</span><b>Add reminder</b><small>What and when</small></button>
+        <button class="quick-card" data-open="contact"><span class="quick-icon">👤</span><b>Add contact</b><small>Person and college</small></button>
+      </div>
+      <div class="home-grid">
+        <article class="panel"><div class="panel-head"><h3>Today and overdue</h3></div><div id="todayTasks" class="stack"></div></article>
+        <article class="panel"><div class="panel-head"><h3>Needs attention</h3></div><div id="attentionList" class="stack"></div></article>
+      </div>
+    </section>
+
+    <section class="view" id="colleges">
+      <div class="page-head"><div><h2>Colleges</h2><p>Profiles, main contacts and next actions.</p></div><button class="btn primary" data-open="college">+ Add college</button></div>
+      <div class="filters"><input id="collegeSearch" class="control" placeholder="Search college, city or contact"></div>
+      <div id="collegeGrid" class="card-grid"></div>
+    </section>
+
+    <section class="view" id="calendar">
+      <div class="page-head"><div><h2>Calendar</h2><p>Tap a date to add notes, reminders or meetings.</p></div></div>
+      <article class="panel calendar-panel"><div class="calendar-head"><button class="icon-btn" id="prevMonth">←</button><h3 id="calendarTitle"></h3><button class="icon-btn" id="nextMonth">→</button></div><div class="calendar" id="calendarGrid"></div></article>
+    </section>
+
+    <section class="view" id="meetings">
+      <div class="page-head"><div><h2>Notes & Meetings</h2><p>Save a quick note or meeting, with or without a college.</p></div><button class="btn primary" data-open="meeting">+ Add notes</button></div>
+      <div id="meetingList" class="stack"></div>
+    </section>
+
+    <section class="view" id="contacts">
+      <div class="page-head"><div><h2>Contacts</h2><p>People you met across colleges.</p></div><button class="btn primary" data-open="contact">+ Add contact</button></div>
+      <div id="contactGrid" class="card-grid"></div>
+    </section>
+
+    <section class="view" id="reminders">
+      <div class="page-head"><div><h2>Reminders</h2><p>Exactly what to remember and when.</p></div><button class="btn primary" data-open="reminder">+ Add reminder</button></div>
+      <div id="reminderList" class="stack"></div>
+    </section>
+
+    <section class="view" id="requirements">
+      <div class="page-head"><div><h2>Requirements</h2><p>Personalized product needs for each college.</p></div><button class="btn primary" data-open="requirement">+ Add requirement</button></div>
+      <div class="filters"><select id="requirementFilter" class="control"></select></div>
+      <div id="requirementList" class="stack"></div>
+    </section>
+
+    <section class="view" id="settings">
+      <div class="page-head"><div><h2>Backup</h2><p>Download or restore your records.</p></div></div>
+      <article class="panel">
+        <h3 style="margin-top:0">Push notifications</h3>
+        <p class="muted">Enable this once on each laptop or phone where you want reminder notifications.</p>
+        <div class="button-row">
+          <button class="btn primary" id="enablePushBtn">Enable notifications</button>
+          <span id="pushStatus" class="muted">Not enabled on this device</span>
+        </div>
+      </article>
+      <article class="panel top-gap">
+        <p class="muted">Supabase is the main database. JSON export is your independent backup.</p>
+        <div class="button-row">
+          <button class="btn primary" id="jsonExport">Download JSON</button>
+          <button class="btn ghost" id="csvExport">Download colleges CSV</button>
+        </div>
+      </article>
+    </section>
+  </main>
+</div>
+
+<button id="mobileFab" class="fab mobile-only">+</button>
+<nav class="bottom-nav mobile-only">
+  <button class="active" data-view="today">⌂<small>Today</small></button>
+  <button data-view="colleges">▦<small>Colleges</small></button>
+  <button data-view="calendar">□<small>Calendar</small></button>
+  <button data-view="reminders">◷<small>Reminders</small></button>
+  <button data-view="contacts">◉<small>Contacts</small></button>
+</nav>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<dialog id="quickDialog">
+<div class="dialog-head"><div><h3>Quick add</h3><p>Choose what you want to record.</p></div><button class="close-btn" data-close="quickDialog">×</button></div>
+<div class="dialog-body quick-dialog-grid">
+  <button class="quick-card" data-quick="college"><span class="quick-icon">🏫</span><b>Add college</b><small>College and main contact</small></button>
+  <button class="quick-card" data-quick="meeting"><span class="quick-icon">📝</span><b>Meeting notes</b><small>Save discussion notes</small></button>
+  <button class="quick-card" data-quick="reminder"><span class="quick-icon">⏰</span><b>Add reminder</b><small>Select date and time</small></button>
+  <button class="quick-card" data-quick="requirement"><span class="quick-icon">≡</span><b>Add requirement</b><small>College-specific request</small></button>
+</div>
+</dialog>
+
+<dialog id="collegeDialog"><form id="collegeForm">
+<div class="dialog-head"><div><h3>Add college</h3><p>College details and main contact.</p></div><button type="button" class="close-btn" data-close="collegeDialog">×</button></div>
+<div class="dialog-body">
+  <div class="form-section"><h4>College details</h4><div class="form-grid">
+    <label class="field full"><span>College name *</span><input id="collegeName" required></label>
+    <label class="field"><span>Location</span><input id="collegeLocation"></label>
+    <label class="field"><span>Relevant students</span><input id="collegeStudents" type="number" min="0"></label>
+    <label class="field"><span>Stage</span><select id="collegeStage"><option>New</option><option>Contacted</option><option>Interested</option><option>Demo scheduled</option><option>Decision pending</option><option>Confirmed</option><option>Not interested</option></select></label>
+    <label class="field"><span>Interest</span><select id="collegeInterest"><option>Unknown</option><option>High</option><option>Medium</option><option>Low</option></select></label>
+  </div></div>
+  <div class="form-section"><h4>Main contact</h4><div class="form-grid">
+    <label class="field"><span>Name *</span><input id="collegeContactName" required></label>
+    <label class="field"><span>Designation</span><input id="collegeContactDesignation"></label>
+    <label class="field"><span>Phone</span><input id="collegeContactPhone" inputmode="tel"></label>
+    <label class="field"><span>Email</span><input id="collegeContactEmail" type="email"></label>
+  </div></div>
+  <div class="form-section"><h4>Next step</h4><div class="form-grid">
+    <label class="field full"><span>Next action</span><input id="collegeNextAction"></label>
+    <label class="field"><span>Next action date</span><input id="collegeNextDate" type="datetime-local"></label>
+    <label class="field"><span>Main blocker</span><input id="collegeBlocker"></label>
+    <label class="field full"><span>Notes</span><textarea id="collegeNotes"></textarea></label>
+  </div></div>
+  <div class="dialog-actions"><button type="button" class="btn ghost" data-close="collegeDialog">Cancel</button><button class="btn primary">Save college</button></div>
+</div>
+</form></dialog>
+
+<dialog id="meetingDialog"><form id="meetingForm">
+<div class="dialog-head"><div><h3 id="meetingDialogTitle">Notes & meeting</h3><p>College is optional. Date and time are saved automatically.</p></div><button type="button" class="close-btn" data-close="meetingDialog">×</button></div>
+<div class="dialog-body"><input id="meetingId" type="hidden"><div class="form-grid">
+  <label class="field full"><span>College (optional)</span><input id="meetingCollegeName" list="collegeSuggestions" placeholder="Type or choose a previous college"></label>
+  <label class="field full inline-check"><input id="meetingCreateCollege" type="checkbox"><span>Create a college profile if this is a new name</span></label>
+  <label class="field full"><span>Topic *</span><input id="meetingTopic" required></label>
+  <label class="field full"><span>Notes *</span><textarea id="meetingNotes" required></textarea></label>
+  <label class="field"><span>Person met</span><input id="meetingPerson"></label>
+  <label class="field"><span>Feedback</span><select id="meetingFeedback"><option>Neutral</option><option>Positive</option><option>Negative</option></select></label>
+  <label class="field"><span>Date & time</span><input id="meetingDate" type="datetime-local"></label>
+  <label class="field"><span>Next action</span><input id="meetingAction"></label>
+  <label class="field"><span>Follow-up date</span><input id="meetingFollowup" type="datetime-local"></label>
+</div><div class="dialog-actions"><button type="button" class="btn ghost" data-close="meetingDialog">Cancel</button><button class="btn primary">Save notes</button></div></div>
+</form></dialog>
+
+<dialog id="contactDialog"><form id="contactForm">
+<div class="dialog-head"><div><h3 id="contactDialogTitle">Add contact</h3><p>Save the person and their college.</p></div><button type="button" class="close-btn" data-close="contactDialog">×</button></div>
+<div class="dialog-body"><input id="contactId" type="hidden"><div class="form-grid">
+  <label class="field full"><span>College (optional)</span><input id="contactCollegeName" list="collegeSuggestions" placeholder="Type or choose a previous college"></label>
+  <label class="field full inline-check"><input id="contactCreateCollege" type="checkbox"><span>Create a college profile if this is a new name</span></label>
+  <label class="field"><span>Name *</span><input id="contactName" required></label>
+  <label class="field"><span>Designation *</span><input id="contactDesignation" required></label>
+  <label class="field"><span>Phone</span><input id="contactPhone" inputmode="tel"></label>
+  <label class="field"><span>Email</span><input id="contactEmail" type="email"></label>
+  <label class="field"><span>Department</span><input id="contactDepartment"></label>
+  <label class="field"><span>Preferred contact</span><select id="contactPreferred"><option>Phone</option><option>WhatsApp</option><option>Email</option><option>In person</option></select></label>
+  <label class="field full"><span>Note</span><textarea id="contactNote"></textarea></label>
+</div><div class="dialog-actions"><button type="button" class="btn ghost" data-close="contactDialog">Cancel</button><button class="btn primary">Save contact</button></div></div>
+</form></dialog>
+
+<dialog id="reminderDialog"><form id="reminderForm">
+<div class="dialog-head"><div><h3 id="reminderDialogTitle">Add reminder</h3><p>Choose exactly what and when.</p></div><button type="button" class="close-btn" data-close="reminderDialog">×</button></div>
+<div class="dialog-body"><input id="reminderId" type="hidden"><div class="form-grid">
+  <label class="field full"><span>Remind me about *</span><input id="reminderText" required></label>
+  <label class="field"><span>Date *</span><input id="reminderDate" type="date" required></label>
+  <label class="field"><span>Time *</span><input id="reminderTime" type="time" required></label>
+  <label class="field full"><span>College (optional)</span><input id="reminderCollegeName" list="collegeSuggestions" placeholder="Type a college name, or leave blank"></label>
+  <label class="field"><span>Type</span><select id="reminderType"><option>Follow-up</option><option>Meeting</option><option>Call</option><option>Product demo</option><option>Send proposal</option><option>Other</option></select></label>
+  <label class="field"><span>Status</span><select id="reminderStatus"><option>Pending</option><option>Completed</option></select></label>
+  <label class="field"><span>Notify me</span><select id="reminderAlertBefore"><option value="0">At reminder time</option><option value="15">15 minutes before</option><option value="30">30 minutes before</option><option value="60">1 hour before</option><option value="1440">1 day before</option></select></label>
+  <label class="field full"><span>Additional note</span><textarea id="reminderNote"></textarea></label>
+</div><div class="dialog-actions"><button type="button" class="btn ghost" data-close="reminderDialog">Cancel</button><button class="btn primary">Save reminder</button></div></div>
+</form></dialog>
+
+<dialog id="requirementDialog"><form id="requirementForm">
+<div class="dialog-head"><div><h3 id="requirementDialogTitle">Add requirement</h3><p>Store the exact request against the correct college.</p></div><button type="button" class="close-btn" data-close="requirementDialog">×</button></div>
+<div class="dialog-body"><input id="requirementId" type="hidden"><div class="form-grid">
+  <label class="field full"><span>College (optional)</span><input id="requirementCollegeName" list="collegeSuggestions" placeholder="Type or choose a previous college"></label>
+  <label class="field full inline-check"><input id="requirementCreateCollege" type="checkbox"><span>Create a college profile if this is a new name</span></label>
+  <label class="field full"><span>Requirement title *</span><input id="requirementTitle" required></label>
+  <label class="field full"><span>Detailed requirement *</span><textarea id="requirementDescription" required></textarea></label>
+  <label class="field"><span>Priority</span><select id="requirementPriority"><option>Medium</option><option>High</option><option>Low</option></select></label>
+  <label class="field"><span>Status</span><select id="requirementStatus"><option>New</option><option>Under discussion</option><option>Accepted</option><option>Not planned</option></select></label>
+  <label class="field full"><span>Requested by</span><input id="requirementBy"></label>
+</div><div class="dialog-actions"><button type="button" class="btn ghost" data-close="requirementDialog">Cancel</button><button class="btn primary">Save requirement</button></div></div>
+</form></dialog>
+
+<dialog id="dayDialog">
+<div class="dialog-head"><div><h3 id="dayHeading">Day planner</h3><p>Add a note, reminder or meeting for this date.</p></div><button class="close-btn" data-close="dayDialog">×</button></div>
+<div class="dialog-body">
+  <div class="button-row"><button class="btn primary" id="dayReminder">+ Reminder</button><button class="btn soft" id="dayMeeting">+ Meeting</button></div>
+  <label class="field full top-gap"><span>Notes for this date</span><textarea id="dayNote"></textarea></label>
+  <div class="button-row top-gap"><button class="btn primary" id="saveDayNote">Save note</button><button class="btn danger" id="deleteDayNote">Delete note</button></div>
+  <div id="dayItems" class="stack top-gap"></div>
+</div>
+</dialog>
+
+<datalist id="collegeSuggestions"></datalist>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/config.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>
