@@ -3,10 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#3558d4">
+<meta name="theme-color" content="#eaf3ff">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Harsha Visits">
 <link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/styles.css">
 <title>Harsha College Visit Assistant</title>
 </head>
@@ -14,7 +17,7 @@
 
 <div id="authView" class="auth-screen">
   <div class="auth-card">
-    <div class="logo large">H</div>
+    <div class="logo large"><span>H</span></div>
     <h1>Harsha College Visit Assistant</h1>
     <p>Sign in to sync the same college data across laptop and phone.</p>
     <label class="field"><span>Email</span><input id="authEmail" type="email" autocomplete="email"></label>
@@ -30,32 +33,33 @@
 
 <div id="appView" class="hidden">
 <header class="topbar">
-  <div class="brand"><div class="logo">H</div><div><h1>Harsha College Visit Assistant</h1><p>Meetings, reminders and college planning</p></div></div>
+  <div class="brand"><div class="logo"><span>H</span></div><div class="brand-copy"><div class="brand-kicker">FIELD CRM</div><h1>Harsha College Visit Assistant</h1><p>Meetings, reminders and college planning</p></div></div>
   <div class="top-actions">
     <div id="syncBadge" class="sync-badge"><span class="dot"></span><span id="syncText">Connecting</span></div>
-    <button class="btn ghost desktop-only" id="exportTop">Export</button>
-    <button class="btn primary" id="quickAddTop">+ Quick add</button>
+    <button class="btn ghost desktop-only" id="exportTop"><span class="btn-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 19h14"/></svg></span>Export</button>
+    <button class="btn primary" id="quickAddTop"><span class="btn-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></span>Quick add</button>
   </div>
 </header>
 
 <div class="shell">
   <aside class="sidebar desktop-only">
     <nav class="nav">
-      <button class="active" data-view="today">⌂ Today</button>
-      <button data-view="colleges">▦ Colleges</button>
-      <button data-view="calendar">□ Calendar</button>
-      <button data-view="meetings">✎ Meeting Notes</button>
-      <button data-view="contacts">◉ Contacts</button>
-      <button data-view="reminders">◷ Reminders</button>
-      <button data-view="requirements">≡ Requirements</button>
-      <button data-view="settings">⚙ Backup</button>
+      <button class="active" data-view="today"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.8 12 3l9 7.8v9.2a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg></span><span>Today</span></button>
+      <button data-view="colleges"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 21V7l8-4 8 4v14M8 10h2m4 0h2M8 14h2m4 0h2M8 18h8M2 21h20"/></svg></span><span>Colleges</span></button>
+      <button data-view="calendar"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2v4m12-4v4M3 9h18M5 4h14a2 2 0 0 1 2 2v15H3V6a2 2 0 0 1 2-2z"/><path d="M7 13h3v3H7zm7 0h3v3h-3z"/></svg></span><span>Calendar</span></button>
+      <button data-view="meetings"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h10l4 4v14H5z"/><path d="M15 3v5h5M8 12h8M8 16h6"/></svg></span><span>Meeting Notes</span></button>
+      <button data-view="contacts"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></span><span>Contacts</span></button>
+      <button data-view="reminders"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><span>Reminders</span></button>
+      <button data-view="requirements"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1"/><circle cx="4.5" cy="12" r="1"/><circle cx="4.5" cy="18" r="1"/></svg></span><span>Requirements</span></button>
+      <button data-view="settings"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.8 1.8 0 0 0 .36 2l.04.04-2.76 2.76-.04-.04a1.8 1.8 0 0 0-2-.36 1.8 1.8 0 0 0-1.08 1.65V21h-3.9v-.05A1.8 1.8 0 0 0 9 19.4a1.8 1.8 0 0 0-2 .36l-.04.04-2.76-2.76.04-.04a1.8 1.8 0 0 0 .36-2A1.8 1.8 0 0 0 2.95 14H3v-4h-.05A1.8 1.8 0 0 0 4.6 9a1.8 1.8 0 0 0-.36-2l-.04-.04L6.96 4.2 7 4.24a1.8 1.8 0 0 0 2 .36A1.8 1.8 0 0 0 10.08 3H10V3h4v.05a1.8 1.8 0 0 0 1.08 1.55 1.8 1.8 0 0 0 2-.36l.04-.04 2.76 2.76-.04.04a1.8 1.8 0 0 0-.36 2A1.8 1.8 0 0 0 21.05 10H21v4h.05A1.8 1.8 0 0 0 19.4 15z"/></svg></span><span>Backup</span></button>
     </nav>
     <div class="side-info"><span>Signed in as</span><strong id="userEmail"></strong><button class="btn ghost full-btn" id="signOutBtn">Sign out</button></div>
   </aside>
 
   <main class="content">
     <section class="view active" id="today">
-      <div class="page-head"><div><h2>Today</h2><p id="todayDate"></p></div><button class="btn soft desktop-only" data-open="meeting">+ Log meeting</button></div>
+      <div class="ambient-orb orb-one"></div><div class="ambient-orb orb-two"></div>
+      <div class="page-head"><div><div class="eyebrow"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2 1.4 4.6L18 8l-4.6 1.4L12 14l-1.4-4.6L6 8l4.6-1.4zM19 14l.8 2.2L22 17l-2.2.8L19 20l-.8-2.2L16 17l2.2-.8zM5 14l.8 2.2L8 17l-2.2.8L5 20l-.8-2.2L2 17l2.2-.8z"/></svg> Daily command center</div><h2>Today</h2><p id="todayDate"></p></div><button class="btn soft desktop-only" data-open="meeting"><span class="btn-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h10l4 4v14H5z"/><path d="M15 3v5h5M8 12h8M8 16h6"/></svg></span>Log meeting</button></div>
       <div class="stats">
         <article class="stat"><span>Total colleges</span><strong id="statColleges">0</strong><small>Institutions tracked</small></article>
         <article class="stat"><span>Today’s activities</span><strong id="statToday">0</strong><small>Meetings and reminders</small></article>
@@ -63,10 +67,10 @@
         <article class="stat"><span>High interest</span><strong id="statHigh">0</strong><small>Strong opportunities</small></article>
       </div>
       <div class="quick-grid desktop-only">
-        <button class="quick-card" data-open="college"><span class="quick-icon">🏫</span><b>Add college</b><small>College and main contact</small></button>
-        <button class="quick-card" data-open="meeting"><span class="quick-icon">📝</span><b>Meeting notes</b><small>Topic, notes and follow-up</small></button>
-        <button class="quick-card" data-open="reminder"><span class="quick-icon">⏰</span><b>Add reminder</b><small>What and when</small></button>
-        <button class="quick-card" data-open="contact"><span class="quick-icon">👤</span><b>Add contact</b><small>Person and college</small></button>
+        <button class="quick-card" data-open="college"><span class="quick-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 21V7l8-4 8 4v14M8 10h2m4 0h2M8 14h2m4 0h2M8 18h8M2 21h20"/></svg></span><b>Add college</b><small>College and main contact</small></button>
+        <button class="quick-card" data-open="meeting"><span class="quick-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h10l4 4v14H5z"/><path d="M15 3v5h5M8 12h8M8 16h6"/></svg></span><b>Meeting notes</b><small>Topic, notes and follow-up</small></button>
+        <button class="quick-card" data-open="reminder"><span class="quick-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg></span><b>Add reminder</b><small>What and when</small></button>
+        <button class="quick-card" data-open="contact"><span class="quick-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></span><b>Add contact</b><small>Person and college</small></button>
       </div>
       <div class="home-grid">
         <article class="panel"><div class="panel-head"><h3>Today and overdue</h3></div><div id="todayTasks" class="stack"></div></article>
@@ -75,33 +79,33 @@
     </section>
 
     <section class="view" id="colleges">
-      <div class="page-head"><div><h2>Colleges</h2><p>Profiles, main contacts and next actions.</p></div><button class="btn primary" data-open="college">+ Add college</button></div>
+      <div class="page-head"><div><h2>Colleges</h2><p>Profiles, main contacts and next actions.</p></div><button class="btn primary" data-open="college"><span class="btn-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></span>Add college</button></div>
       <div class="filters"><input id="collegeSearch" class="control" placeholder="Search college, city or contact"></div>
       <div id="collegeGrid" class="card-grid"></div>
     </section>
 
     <section class="view" id="calendar">
       <div class="page-head"><div><h2>Calendar</h2><p>Tap a date to add notes, reminders or meetings.</p></div></div>
-      <article class="panel calendar-panel"><div class="calendar-head"><button class="icon-btn" id="prevMonth">←</button><h3 id="calendarTitle"></h3><button class="icon-btn" id="nextMonth">→</button></div><div class="calendar" id="calendarGrid"></div></article>
+      <article class="panel calendar-panel"><div class="calendar-head"><button class="icon-btn" id="prevMonth"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button><h3 id="calendarTitle"></h3><button class="icon-btn" id="nextMonth"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button></div><div class="calendar" id="calendarGrid"></div></article>
     </section>
 
     <section class="view" id="meetings">
-      <div class="page-head"><div><h2>Notes & Meetings</h2><p>Save a quick note or meeting, with or without a college.</p></div><button class="btn primary" data-open="meeting">+ Add notes</button></div>
+      <div class="page-head"><div><h2>Notes & Meetings</h2><p>Save a quick note or meeting, with or without a college.</p></div><button class="btn primary" data-open="meeting"><span class="btn-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></span>Add notes</button></div>
       <div id="meetingList" class="stack"></div>
     </section>
 
     <section class="view" id="contacts">
-      <div class="page-head"><div><h2>Contacts</h2><p>People you met across colleges.</p></div><button class="btn primary" data-open="contact">+ Add contact</button></div>
+      <div class="page-head"><div><h2>Contacts</h2><p>People you met across colleges.</p></div><button class="btn primary" data-open="contact"><span class="btn-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></span>Add contact</button></div>
       <div id="contactGrid" class="card-grid"></div>
     </section>
 
     <section class="view" id="reminders">
-      <div class="page-head"><div><h2>Reminders</h2><p>Exactly what to remember and when.</p></div><button class="btn primary" data-open="reminder">+ Add reminder</button></div>
+      <div class="page-head"><div><h2>Reminders</h2><p>Exactly what to remember and when.</p></div><button class="btn primary" data-open="reminder"><span class="btn-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></span>Add reminder</button></div>
       <div id="reminderList" class="stack"></div>
     </section>
 
     <section class="view" id="requirements">
-      <div class="page-head"><div><h2>Requirements</h2><p>Personalized product needs for each college.</p></div><button class="btn primary" data-open="requirement">+ Add requirement</button></div>
+      <div class="page-head"><div><h2>Requirements</h2><p>Personalized product needs for each college.</p></div><button class="btn primary" data-open="requirement"><span class="btn-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></span>Add requirement</button></div>
       <div class="filters"><select id="requirementFilter" class="control"></select></div>
       <div id="requirementList" class="stack"></div>
     </section>
@@ -127,13 +131,13 @@
   </main>
 </div>
 
-<button id="mobileFab" class="fab mobile-only">+</button>
+<button id="mobileFab" class="fab mobile-only"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
 <nav class="bottom-nav mobile-only">
-  <button class="active" data-view="today">⌂<small>Today</small></button>
-  <button data-view="colleges">▦<small>Colleges</small></button>
-  <button data-view="calendar">□<small>Calendar</small></button>
-  <button data-view="reminders">◷<small>Reminders</small></button>
-  <button data-view="contacts">◉<small>Contacts</small></button>
+  <button class="active" data-view="today"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.8 12 3l9 7.8v9.2a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg><small>Today</small></button>
+  <button data-view="colleges"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 21V7l8-4 8 4v14M8 10h2m4 0h2M8 14h2m4 0h2M8 18h8M2 21h20"/></svg><small>Colleges</small></button>
+  <button data-view="calendar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2v4m12-4v4M3 9h18M5 4h14a2 2 0 0 1 2 2v15H3V6a2 2 0 0 1 2-2z"/><path d="M7 13h3v3H7zm7 0h3v3h-3z"/></svg><small>Calendar</small></button>
+  <button data-view="reminders"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><small>Reminders</small></button>
+  <button data-view="contacts"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><small>Contacts</small></button>
 </nav>
 </div>
 
@@ -142,10 +146,10 @@
 <dialog id="quickDialog">
 <div class="dialog-head"><div><h3>Quick add</h3><p>Choose what you want to record.</p></div><button class="close-btn" data-close="quickDialog">×</button></div>
 <div class="dialog-body quick-dialog-grid">
-  <button class="quick-card" data-quick="college"><span class="quick-icon">🏫</span><b>Add college</b><small>College and main contact</small></button>
-  <button class="quick-card" data-quick="meeting"><span class="quick-icon">📝</span><b>Meeting notes</b><small>Save discussion notes</small></button>
-  <button class="quick-card" data-quick="reminder"><span class="quick-icon">⏰</span><b>Add reminder</b><small>Select date and time</small></button>
-  <button class="quick-card" data-quick="requirement"><span class="quick-icon">≡</span><b>Add requirement</b><small>College-specific request</small></button>
+  <button class="quick-card" data-quick="college"><span class="quick-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 21V7l8-4 8 4v14M8 10h2m4 0h2M8 14h2m4 0h2M8 18h8M2 21h20"/></svg></span><b>Add college</b><small>College and main contact</small></button>
+  <button class="quick-card" data-quick="meeting"><span class="quick-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h10l4 4v14H5z"/><path d="M15 3v5h5M8 12h8M8 16h6"/></svg></span><b>Meeting notes</b><small>Save discussion notes</small></button>
+  <button class="quick-card" data-quick="reminder"><span class="quick-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg></span><b>Add reminder</b><small>Select date and time</small></button>
+  <button class="quick-card" data-quick="requirement"><span class="quick-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1"/><circle cx="4.5" cy="12" r="1"/><circle cx="4.5" cy="18" r="1"/></svg></span><b>Add requirement</b><small>College-specific request</small></button>
 </div>
 </dialog>
 
