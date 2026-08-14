@@ -1,32 +1,8 @@
-const CACHE="harsha-supabase-pwa-v1";const ASSETS=["./","./index.html","./assets/styles.css","./assets/app.js","./assets/config.js","./manifest.json"];self.addEventListener("install",e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS))));self.addEventListener("fetch",e=>e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request))));
-
-self.addEventListener("push", event => {
-  let data = {};
-  try { data = event.data ? event.data.json() : {}; } catch (_) {}
-  const title = data.title || "Harsha College Assistant";
-  const options = {
-    body: data.body || "You have a reminder.",
-    tag: data.tag || "harsha-reminder",
-    renotify: true,
-    data: { url: data.url || "./index.html", reminderId: data.reminderId || null },
-    icon: data.icon || "./icon-192.png",
-    badge: data.badge || "./icon-192.png"
-  };
-  event.waitUntil(self.registration.showNotification(title, options));
-});
-
-self.addEventListener("notificationclick", event => {
-  event.notification.close();
-  const target = event.notification.data?.url || "./index.html";
-  event.waitUntil(
-    clients.matchAll({ type: "window", includeUncontrolled: true }).then(list => {
-      for (const client of list) {
-        if ("focus" in client) {
-          client.navigate(target).catch(()=>{});
-          return client.focus();
-        }
-      }
-      return clients.openWindow ? clients.openWindow(target) : undefined;
-    })
-  );
-});
+const CACHE_NAME="harsha-crm-v4-20260814";
+const STATIC=["./","./index.html","./manifest.json","./icon-192.png","./icon-512.png","./assets/styles.css","./assets/app.js","./assets/crm-pro.js"];
+self.addEventListener("install",event=>{self.skipWaiting();event.waitUntil(caches.open(CACHE_NAME).then(c=>c.addAll(STATIC)).catch(()=>{}))});
+self.addEventListener("activate",event=>{event.waitUntil(Promise.all([caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE_NAME).map(k=>caches.delete(k)))),self.clients.claim()]))});
+async function networkFirst(req){try{const fresh=await fetch(req,{cache:"no-store"});const cache=await caches.open(CACHE_NAME);if(req.method==="GET"&&fresh.ok)cache.put(req,fresh.clone());return fresh}catch(e){return (await caches.match(req))||Response.error()}}
+self.addEventListener("fetch",event=>{const u=new URL(event.request.url);if(event.request.mode==="navigate"||u.pathname.endsWith("/assets/config.js")||u.pathname.endsWith("/index.html")||u.pathname.endsWith("/assets/app.js")||u.pathname.endsWith("/assets/crm-pro.js")){event.respondWith(networkFirst(event.request));return}if(event.request.method==="GET"&&u.origin===location.origin)event.respondWith(caches.match(event.request).then(r=>r||fetch(event.request).then(async res=>{const c=await caches.open(CACHE_NAME);if(res.ok)c.put(event.request,res.clone());return res}))) });
+self.addEventListener("push",event=>{let data={};try{data=event.data?event.data.json():{}}catch{data={body:event.data?.text()||"Reminder"}}const title=data.title||"Harsha College Assistant";event.waitUntil(self.registration.showNotification(title,{body:data.body||"You have a reminder.",icon:"./icon-192.png",badge:"./icon-192.png",tag:data.tag||"harsha-reminder",data:{url:data.url||"./index.html",reminderId:data.reminderId||null}}))});
+self.addEventListener("notificationclick",event=>{event.notification.close();const url=event.notification.data?.url||"./index.html";event.waitUntil(clients.matchAll({type:"window",includeUncontrolled:true}).then(list=>{for(const c of list){if("focus" in c){c.navigate(url);return c.focus()}}return clients.openWindow?clients.openWindow(url):null}))});

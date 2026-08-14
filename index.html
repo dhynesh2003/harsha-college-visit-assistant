@@ -45,11 +45,18 @@
   <aside class="sidebar desktop-only">
     <nav class="nav">
       <button class="active" data-view="today"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.8 12 3l9 7.8v9.2a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg></span><span>Today</span></button>
+      <button data-view="pipeline"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16M7 5v5h10V5M9 10v5h6v-5M11 15v4h2v-4"/></svg></span><span>Pipeline</span></button>
+      <button data-view="visits"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s6-5.2 6-11a6 6 0 1 0-12 0c0 5.8 6 11 6 11z"/><circle cx="12" cy="10" r="2"/></svg></span><span>Visits</span></button>
+      <button data-view="activity"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 17V7m5 10V4m5 13v-6m5 6V9"/></svg></span><span>Activity</span></button>
       <button data-view="colleges"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 21V7l8-4 8 4v14M8 10h2m4 0h2M8 14h2m4 0h2M8 18h8M2 21h20"/></svg></span><span>Colleges</span></button>
       <button data-view="calendar"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2v4m12-4v4M3 9h18M5 4h14a2 2 0 0 1 2 2v15H3V6a2 2 0 0 1 2-2z"/><path d="M7 13h3v3H7zm7 0h3v3h-3z"/></svg></span><span>Calendar</span></button>
       <button data-view="meetings"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h10l4 4v14H5z"/><path d="M15 3v5h5M8 12h8M8 16h6"/></svg></span><span>Meeting Notes</span></button>
       <button data-view="contacts"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></span><span>Contacts</span></button>
       <button data-view="reminders"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><span>Reminders</span></button>
+
+      <button data-view="files"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h6l2 2h8v14H4z"/><path d="M8 12h8M8 16h5"/></svg></span><span>Files</span></button>
+      <button data-view="reports"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V10m5 10V4m5 16v-7m5 7V7"/></svg></span><span>Reports</span></button>
+      <button data-view="notifications"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg></span><span>Notifications</span></button>
       <button data-view="requirements"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1"/><circle cx="4.5" cy="12" r="1"/><circle cx="4.5" cy="18" r="1"/></svg></span><span>Requirements</span></button>
       <button data-view="settings"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.8 1.8 0 0 0 .36 2l.04.04-2.76 2.76-.04-.04a1.8 1.8 0 0 0-2-.36 1.8 1.8 0 0 0-1.08 1.65V21h-3.9v-.05A1.8 1.8 0 0 0 9 19.4a1.8 1.8 0 0 0-2 .36l-.04.04-2.76-2.76.04-.04a1.8 1.8 0 0 0 .36-2A1.8 1.8 0 0 0 2.95 14H3v-4h-.05A1.8 1.8 0 0 0 4.6 9a1.8 1.8 0 0 0-.36-2l-.04-.04L6.96 4.2 7 4.24a1.8 1.8 0 0 0 2 .36A1.8 1.8 0 0 0 10.08 3H10V3h4v.05a1.8 1.8 0 0 0 1.08 1.55 1.8 1.8 0 0 0 2-.36l.04-.04 2.76 2.76-.04.04a1.8 1.8 0 0 0-.36 2A1.8 1.8 0 0 0 21.05 10H21v4h.05A1.8 1.8 0 0 0 19.4 15z"/></svg></span><span>Backup</span></button>
     </nav>
@@ -66,6 +73,7 @@
         <article class="stat"><span>Overdue</span><strong id="statOverdue">0</strong><small>Needs attention</small></article>
         <article class="stat"><span>High interest</span><strong id="statHigh">0</strong><small>Strong opportunities</small></article>
       </div>
+      <div id="proPulse" class="pro-pulse-grid"></div>
       <div class="quick-grid desktop-only">
         <button class="quick-card" data-open="college"><span class="quick-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 21V7l8-4 8 4v14M8 10h2m4 0h2M8 14h2m4 0h2M8 18h8M2 21h20"/></svg></span><b>Add college</b><small>College and main contact</small></button>
         <button class="quick-card" data-open="meeting"><span class="quick-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h10l4 4v14H5z"/><path d="M15 3v5h5M8 12h8M8 16h6"/></svg></span><b>Meeting notes</b><small>Topic, notes and follow-up</small></button>
@@ -76,6 +84,25 @@
         <article class="panel"><div class="panel-head"><h3>Today and overdue</h3></div><div id="todayTasks" class="stack"></div></article>
         <article class="panel"><div class="panel-head"><h3>Needs attention</h3></div><div id="attentionList" class="stack"></div></article>
       </div>
+    </section>
+
+
+    <section class="view" id="pipeline">
+      <div class="page-head"><div><div class="eyebrow"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16M7 5v5h10V5M9 10v5h6v-5M11 15v4h2v-4"/></svg> Revenue & conversion</div><h2>Pipeline</h2><p>Move every college opportunity from prospect to onboarding without losing the next step.</p></div><button class="btn primary" data-pro-open="opportunity"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg> Add opportunity</button></div>
+      <div id="pipelineSummary" class="pro-summary-row"></div>
+      <div id="pipelineBoard" class="pipeline-board"></div>
+    </section>
+
+    <section class="view" id="visits">
+      <div class="page-head"><div><div class="eyebrow"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s6-5.2 6-11a6 6 0 1 0-12 0c0 5.8 6 11 6 11z"/><circle cx="12" cy="10" r="2"/></svg> Field execution</div><h2>Visits</h2><p>Plan the visit, capture who you met, record the outcome and create the next follow-up.</p></div><button class="btn primary" data-pro-open="visit"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg> Plan visit</button></div>
+      <div class="filters pro-filter-row"><select id="visitStatusFilter" class="control"><option value="">All visit statuses</option><option>Planned</option><option>Confirmed</option><option>Completed</option><option>Cancelled</option></select><input id="visitSearch" class="control" placeholder="Search college, purpose or person"></div>
+      <div id="visitList" class="stack"></div>
+    </section>
+
+    <section class="view" id="activity">
+      <div class="page-head"><div><div class="eyebrow"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 17V7m5 10V4m5 13v-6m5 6V9"/></svg> Complete history</div><h2>Activity Timeline</h2><p>Calls, WhatsApp, emails, meetings, demos, requirements, reminders and visits in one chronological feed.</p></div><button class="btn primary" data-pro-open="activity"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg> Log activity</button></div>
+      <div class="filters pro-filter-row"><select id="activityTypeFilter" class="control"><option value="">All activity types</option><option>Call</option><option>WhatsApp</option><option>Email</option><option>Meeting</option><option>Demo</option><option>Proposal</option><option>Follow-up</option><option>No Response</option><option>Other</option></select><input id="activitySearch" class="control" placeholder="Search college, contact, outcome"></div>
+      <div id="activityTimeline" class="timeline"></div>
     </section>
 
     <section class="view" id="colleges">
@@ -102,6 +129,105 @@
     <section class="view" id="reminders">
       <div class="page-head"><div><h2>Reminders</h2><p>Exactly what to remember and when.</p></div><button class="btn primary" data-open="reminder"><span class="btn-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></span>Add reminder</button></div>
       <div id="reminderList" class="stack"></div>
+    </section>
+
+
+
+    <section class="view" id="files">
+      <div class="page-head"><div><div class="eyebrow"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h6l2 2h8v14H4z"/><path d="M8 12h8M8 16h5"/></svg> Document center</div><h2>Files & Attachments</h2><p>Keep proposals, PDFs, photos, business cards and supporting documents against the right college.</p></div><button class="btn primary" data-pro-open="file"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg> Upload file</button></div>
+      <div class="filters pro-filter-row"><input id="fileSearch" class="control" placeholder="Search files or college"></div>
+      <div id="fileGrid" class="card-grid"></div>
+    </section>
+
+    <section class="view" id="reports">
+      <div class="page-head"><div><div class="eyebrow"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V10m5 10V4m5 16v-7m5 7V7"/></svg> Management intelligence</div><h2>Reports</h2><p>Pipeline value, conversion, follow-up discipline, visits and account health at a glance.</p></div><button class="btn soft" id="exportProReport">Export CRM CSV</button></div>
+      <div id="reportMetrics" class="report-metrics"></div>
+      <div class="report-grid"><article class="panel"><div class="panel-head"><h3>Pipeline funnel</h3></div><div id="funnelReport"></div></article><article class="panel"><div class="panel-head"><h3>Follow-up health</h3></div><div id="followupReport"></div></article></div>
+      <article class="panel top-gap"><div class="panel-head"><h3>College health</h3></div><div id="collegeHealthReport" class="stack"></div></article>
+    </section>
+
+    <section class="view" id="notifications">
+      <div class="page-head">
+        <div>
+          <div class="eyebrow"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg> External push delivery</div>
+          <h2>Notifications</h2>
+          <p>Manage browser permission, OneSignal registration and reminder delivery.</p>
+        </div>
+        <div class="button-row">
+          <button class="btn soft" id="refreshNotificationStatusBtn">Refresh status</button>
+          <button class="btn primary" id="sendTestNotificationBtn">Send test notification</button>
+        </div>
+      </div>
+
+      <div class="notification-health-grid">
+        <article class="notification-health-card">
+          <span class="health-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg></span>
+          <div><small>Browser permission</small><strong id="notifPermissionState">Checking…</strong></div>
+          <span class="health-dot" id="notifPermissionDot"></span>
+        </article>
+        <article class="notification-health-card">
+          <span class="health-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg></span>
+          <div><small>OneSignal delivery</small><strong id="notifProviderState">Checking…</strong></div>
+          <span class="health-dot" id="notifProviderDot"></span>
+        </article>
+        <article class="notification-health-card">
+          <span class="health-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg></span>
+          <div><small>Device registration</small><strong id="notifDeviceState">Checking…</strong></div>
+          <span class="health-dot" id="notifDeviceDot"></span>
+        </article>
+        <article class="notification-health-card">
+          <span class="health-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg></span>
+          <div><small>User connection</small><strong id="notifIdentityState">Checking…</strong></div>
+          <span class="health-dot" id="notifIdentityDot"></span>
+        </article>
+      </div>
+
+      <div class="notification-layout">
+        <div class="panel notification-main-panel">
+          <div class="panel-head">
+            <div>
+              <h3>Push notification control</h3>
+              <div class="meta">OneSignal handles external web-push delivery while Supabase remains your reminder database and scheduler.</div>
+            </div>
+          </div>
+          <div class="notification-action-box">
+            <div class="notification-action-copy">
+              <strong id="notifHeroTitle">Checking notification connection…</strong>
+              <p id="notifHeroText">The app is checking this browser and OneSignal registration.</p>
+            </div>
+            <button class="btn primary" id="oneSignalEnableBtn">Enable notifications</button>
+          </div>
+          <div class="notification-tech-grid">
+            <div><span>Provider</span><b>OneSignal Web Push</b></div>
+            <div><span>Supabase user</span><b id="notifExternalId">—</b></div>
+            <div><span>Subscription ID</span><b id="notifSubscriptionId">—</b></div>
+            <div><span>Current origin</span><b id="notifOrigin">—</b></div>
+          </div>
+        </div>
+
+        <div class="panel notification-side-panel">
+          <div class="panel-head"><h3>Quick diagnostic</h3></div>
+          <div class="notification-checklist" id="notificationChecklist">
+            <div><span class="check-dot"></span> HTTPS origin</div>
+            <div><span class="check-dot"></span> Browser permission</div>
+            <div><span class="check-dot"></span> OneSignal SDK</div>
+            <div><span class="check-dot"></span> Registered subscription</div>
+            <div><span class="check-dot"></span> Supabase user linked</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel top-gap">
+        <div class="panel-head">
+          <div>
+            <h3>Recent notification delivery</h3>
+            <div class="meta">Accepted means OneSignal accepted the push request. Browser/OS settings still control final display.</div>
+          </div>
+        </div>
+        <div id="notificationDeliveryList" class="stack">
+          <div class="empty">No notification delivery records yet.</div>
+        </div>
+      </div>
     </section>
 
     <section class="view" id="requirements">
@@ -143,17 +269,28 @@
 
 <div id="toast" class="toast"></div>
 
+
+<dialog id="visitDialog"><div class="dialog-head"><div><h3 id="visitDialogTitle">Plan visit</h3><p>Prepare before the visit and capture the outcome immediately after.</p></div><button class="close-btn" data-pro-close="visitDialog">×</button></div><div class="dialog-body"><form id="visitForm"><input type="hidden" id="visitId"><div class="form-grid"><label class="field full"><span>College</span><input id="visitCollege" list="collegeSuggestions" placeholder="Type or choose college"></label><label class="field"><span>Purpose</span><select id="visitPurpose"><option>Introductory Meeting</option><option>Follow-up</option><option>Demo</option><option>Requirement Discussion</option><option>Proposal Discussion</option><option>Implementation</option><option>Support</option><option>Other</option></select></label><label class="field"><span>Status</span><select id="visitStatus"><option>Planned</option><option>Confirmed</option><option>Completed</option><option>Cancelled</option></select></label><label class="field"><span>Visit date & time</span><input id="visitAt" type="datetime-local" required></label><label class="field"><span>Location / campus</span><input id="visitLocation"></label><label class="field full"><span>Agenda</span><textarea id="visitAgenda" placeholder="What must be achieved in this visit?"></textarea></label><label class="field full"><span>People met</span><input id="visitPeople" placeholder="Principal, HOD, professor…"></label><label class="field"><span>Interest after visit</span><select id="visitInterest"><option>Unknown</option><option>Low</option><option>Medium</option><option>High</option></select></label><label class="field"><span>Follow-up</span><input id="visitFollowup" type="datetime-local"></label><label class="field full"><span>Outcome</span><textarea id="visitOutcome" placeholder="What happened? What did they agree to?"></textarea></label><label class="field full"><span>Blocker / objection</span><input id="visitBlocker" placeholder="Budget, approval, no response, syllabus mismatch…"></label><label class="field full"><span>Next action</span><input id="visitNextAction" placeholder="Send proposal, arrange demo, call HOD…"></label><label class="field full"><span>Internal notes</span><textarea id="visitNotes"></textarea></label></div><div class="dialog-actions"><button type="button" class="btn ghost" data-pro-close="visitDialog">Cancel</button><button class="btn primary" type="submit">Save visit</button></div></form></div></dialog>
+
+<dialog id="activityDialog"><div class="dialog-head"><div><h3 id="activityDialogTitle">Log activity</h3><p>Record every contact attempt, including no-response follow-ups.</p></div><button class="close-btn" data-pro-close="activityDialog">×</button></div><div class="dialog-body"><form id="activityForm"><input type="hidden" id="activityId"><div class="form-grid"><label class="field"><span>Activity type</span><select id="activityType"><option>Call</option><option>WhatsApp</option><option>Email</option><option>Meeting</option><option>Demo</option><option>Proposal</option><option>Follow-up</option><option>No Response</option><option>Other</option></select></label><label class="field"><span>Date & time</span><input id="activityAt" type="datetime-local" required></label><label class="field full"><span>College</span><input id="activityCollege" list="collegeSuggestions" placeholder="Optional"></label><label class="field"><span>Contact person</span><input id="activityContact"></label><label class="field"><span>Outcome</span><select id="activityOutcome"><option>Pending</option><option>Positive</option><option>Neutral</option><option>No Response</option><option>Rejected</option><option>Completed</option></select></label><label class="field full"><span>Activity title</span><input id="activityTitle" required placeholder="Called HOD about demo date"></label><label class="field full"><span>Details</span><textarea id="activityDetails"></textarea></label><label class="field full"><span>Next action</span><input id="activityNextAction"></label><label class="field"><span>Create follow-up for</span><input id="activityFollowup" type="datetime-local"></label></div><div class="dialog-actions"><button type="button" class="btn ghost" data-pro-close="activityDialog">Cancel</button><button class="btn primary" type="submit">Save activity</button></div></form></div></dialog>
+
+<dialog id="opportunityDialog"><div class="dialog-head"><div><h3 id="opportunityDialogTitle">Add opportunity</h3><p>Track commercial progress independently from general college notes.</p></div><button class="close-btn" data-pro-close="opportunityDialog">×</button></div><div class="dialog-body"><form id="opportunityForm"><input type="hidden" id="opportunityId"><div class="form-grid"><label class="field full"><span>College</span><input id="opportunityCollege" list="collegeSuggestions" required></label><label class="field full"><span>Opportunity</span><input id="opportunityName" required placeholder="Engineering Mathematics LMS rollout"></label><label class="field"><span>Stage</span><select id="opportunityStage"><option>Prospect</option><option>Contacted</option><option>Meeting Scheduled</option><option>Demo Completed</option><option>Requirement / Proposal</option><option>Negotiation</option><option>Won / Onboarding</option><option>Lost</option></select></label><label class="field"><span>Probability %</span><input id="opportunityProbability" type="number" min="0" max="100" value="20"></label><label class="field"><span>Estimated value ₹</span><input id="opportunityValue" type="number" min="0" step="1000"></label><label class="field"><span>Expected close</span><input id="opportunityClose" type="date"></label><label class="field"><span>Status</span><select id="opportunityStatus"><option>Open</option><option>Won</option><option>Lost</option></select></label><label class="field full"><span>Lost reason / risk</span><input id="opportunityLostReason"></label><label class="field full"><span>Notes</span><textarea id="opportunityNotes"></textarea></label></div><div class="dialog-actions"><button type="button" class="btn ghost" data-pro-close="opportunityDialog">Cancel</button><button class="btn primary" type="submit">Save opportunity</button></div></form></div></dialog>
+
+<dialog id="fileDialog"><div class="dialog-head"><div><h3>Upload CRM file</h3><p>Attach documents to a college. Files are stored privately in Supabase Storage.</p></div><button class="close-btn" data-pro-close="fileDialog">×</button></div><div class="dialog-body"><form id="fileForm"><div class="form-grid"><label class="field full"><span>College</span><input id="fileCollege" list="collegeSuggestions" placeholder="Optional"></label><label class="field"><span>Category</span><select id="fileCategory"><option>Proposal</option><option>Requirement</option><option>Meeting</option><option>Business Card</option><option>Photo</option><option>Agreement</option><option>Other</option></select></label><label class="field"><span>File</span><input id="fileInput" type="file" required></label><label class="field full"><span>Note</span><input id="fileNote" placeholder="What is this file for?"></label></div><div class="dialog-actions"><button type="button" class="btn ghost" data-pro-close="fileDialog">Cancel</button><button class="btn primary" type="submit">Upload</button></div></form></div></dialog>
+
+<dialog id="collegeTimelineDialog"><div class="dialog-head"><div><h3 id="collegeTimelineTitle">College timeline</h3><p>One account view across every interaction.</p></div><button class="close-btn" data-pro-close="collegeTimelineDialog">×</button></div><div class="dialog-body"><div id="collegeTimelineBody" class="timeline"></div></div></dialog>
+
 <dialog id="quickDialog">
 <div class="dialog-head"><div><h3>Quick add</h3><p>Choose what you want to record.</p></div><button class="close-btn" data-close="quickDialog">×</button></div>
 <div class="dialog-body quick-dialog-grid">
-  <button class="quick-card" data-quick="college"><span class="quick-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 21V7l8-4 8 4v14M8 10h2m4 0h2M8 14h2m4 0h2M8 18h8M2 21h20"/></svg></span><b>Add college</b><small>College and main contact</small></button>
+  <button class="quick-card" data-pro-open="visit"><span class="quick-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s6-5.2 6-11a6 6 0 1 0-12 0c0 5.8 6 11 6 11z"/><circle cx="12" cy="10" r="2"/></svg></span><b>Plan visit</b><small>Agenda, outcome and follow-up</small></button><button class="quick-card" data-pro-open="activity"><span class="quick-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 17V7m5 10V4m5 13v-6m5 6V9"/></svg></span><b>Log activity</b><small>Call, WhatsApp, email or no response</small></button><button class="quick-card" data-pro-open="opportunity"><span class="quick-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16M7 5v5h10V5M9 10v5h6v-5M11 15v4h2v-4"/></svg></span><b>Add opportunity</b><small>Pipeline stage and value</small></button><button class="quick-card" data-quick="college"><span class="quick-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 21V7l8-4 8 4v14M8 10h2m4 0h2M8 14h2m4 0h2M8 18h8M2 21h20"/></svg></span><b>Add college</b><small>College and main contact</small></button>
   <button class="quick-card" data-quick="meeting"><span class="quick-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h10l4 4v14H5z"/><path d="M15 3v5h5M8 12h8M8 16h6"/></svg></span><b>Meeting notes</b><small>Save discussion notes</small></button>
   <button class="quick-card" data-quick="reminder"><span class="quick-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg></span><b>Add reminder</b><small>Select date and time</small></button>
   <button class="quick-card" data-quick="requirement"><span class="quick-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1"/><circle cx="4.5" cy="12" r="1"/><circle cx="4.5" cy="18" r="1"/></svg></span><b>Add requirement</b><small>College-specific request</small></button>
 </div>
 </dialog>
 
-<dialog id="collegeDialog"><form id="collegeForm">
+<dialog id="collegeDialog"><form id="collegeForm"><input type="hidden" id="collegeId">
 <div class="dialog-head"><div><h3>Add college</h3><p>College details and main contact.</p></div><button type="button" class="close-btn" data-close="collegeDialog">×</button></div>
 <div class="dialog-body">
   <div class="form-section"><h4>College details</h4><div class="form-grid">
@@ -249,6 +386,8 @@
 <datalist id="collegeSuggestions"></datalist>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="assets/config.js"></script>
+<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 <script src="assets/app.js"></script>
+<script src="assets/crm-pro.js"></script>
 </body>
 </html>
