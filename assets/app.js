@@ -1,11 +1,11 @@
-
+﻿
 (() => {
 "use strict";
 const cfg=window.HARSHA_SUPABASE_CONFIG||{};
 const configured=()=>cfg.url?.startsWith("https://") && !cfg.url.includes("PASTE_") && cfg.anonKey && !cfg.anonKey.includes("PASTE_");
 const $=id=>document.getElementById(id);
 const esc=v=>String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
-const fmt=v=>v?new Date(v).toLocaleString([], {dateStyle:"medium",timeStyle:"short"}):"—";
+const fmt=v=>v?new Date(v).toLocaleString([], {dateStyle:"medium",timeStyle:"short"}):"â€”";
 const isoLocal=v=>v?new Date(v).toISOString():"";
 const localNow=()=>new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,16);
 const CACHE_KEY="harsha_supabase_cache_v1";
@@ -98,7 +98,7 @@ function setHealth(id,text,state){
 }
 async function refreshNotificationCenter(){
   const origin=$("notifOrigin");if(origin)origin.textContent=location.origin;
-  if($("notifExternalId"))$("notifExternalId").textContent=user?.id||"—";
+  if($("notifExternalId"))$("notifExternalId").textContent=user?.id||"â€”";
   const sdkConfigured=!!(cfg.oneSignalAppId&&!cfg.oneSignalAppId.includes("PASTE_"));
   setHealth("notifProviderState",sdkConfigured?"Configured":"Needs App ID",sdkConfigured?"good":"bad");
   let supported=false,permission=false,opted=false,subscriptionId=null,externalId=null;
@@ -126,7 +126,7 @@ async function refreshNotificationCenter(){
     setHealth("notifDeviceState",subscriptionId&&opted?"Subscribed":subscriptionId?"Opted out":"Not registered",subscriptionId&&opted?"good":"warn");
     setHealth("notifIdentityState",externalId===user?.id?"Linked to account":"Not linked",externalId===user?.id?"good":"warn");
   }
-  if($("notifSubscriptionId"))$("notifSubscriptionId").textContent=subscriptionId||"—";
+  if($("notifSubscriptionId"))$("notifSubscriptionId").textContent=subscriptionId||"â€”";
   const ready=sdkConfigured&&supported&&permission&&opted&&subscriptionId&&externalId===user?.id;
   if($("notifHeroTitle"))$("notifHeroTitle").textContent=ready?"External push is ready":"Notification setup needs attention";
   if($("notifHeroText"))$("notifHeroText").textContent=ready?"This browser is registered with OneSignal and linked to your signed-in Supabase account.":"Use Enable notifications and allow the browser prompt. Your production Vercel origin must exactly match the OneSignal Web configuration.";
@@ -158,9 +158,9 @@ async function enableOneSignalNotifications(){
 }
 async function sendTestNotification(){
   if(!user)return alert("Sign in first.");
-  const btn=$("sendTestNotificationBtn");if(btn){btn.disabled=true;btn.textContent="Sending…"}
+  const btn=$("sendTestNotificationBtn");if(btn){btn.disabled=true;btn.textContent="Sendingâ€¦"}
   try{
-    const {data,error}=await sb.functions.invoke("send-test-notification",{body:{title:"Harsha College Assistant",message:"Test notification successful — external push delivery is working."}});
+    const {data,error}=await sb.functions.invoke("send-test-notification",{body:{title:"Harsha College Assistant",message:"Test notification successful â€” external push delivery is working."}});
     if(error)throw error;
     if(!data?.ok)throw new Error(data?.error||"Test push was not accepted.");
     toast("Test push accepted by OneSignal");
@@ -175,7 +175,7 @@ async function loadNotificationDeliveryLog(){
     list.innerHTML='<div class="empty">Delivery log table is not ready yet. Run <b>onesignal-notification-migration.sql</b> once in Supabase SQL Editor.</div>';
     return;
   }
-  list.innerHTML=data?.length?data.map(x=>`<div class="delivery-row"><div><div class="title">${esc(x.title||"Notification")}</div><div class="meta">${esc(x.message||"")} · ${fmt(x.created_at)} · ${esc(x.provider||"OneSignal")}</div>${x.error_message?`<div class="meta">${esc(x.error_message)}</div>`:""}</div><span class="delivery-status ${x.status==="accepted"||x.status==="sent"?"success":x.status==="failed"?"failed":""}">${esc(x.status||"unknown")}</span></div>`).join(""):'<div class="empty">No delivery attempts yet. Use Send test notification.</div>';
+  list.innerHTML=data?.length?data.map(x=>`<div class="delivery-row"><div><div class="title">${esc(x.title||"Notification")}</div><div class="meta">${esc(x.message||"")} Â· ${fmt(x.created_at)} Â· ${esc(x.provider||"OneSignal")}</div>${x.error_message?`<div class="meta">${esc(x.error_message)}</div>`:""}</div><span class="delivery-status ${x.status==="accepted"||x.status==="sent"?"success":x.status==="failed"?"failed":""}">${esc(x.status||"unknown")}</span></div>`).join(""):'<div class="empty">No delivery attempts yet. Use Send test notification.</div>';
 }
 
 function urlBase64ToUint8Array(base64String){
@@ -416,7 +416,7 @@ $("requirementForm").onsubmit=async e=>{
   }catch(err){alert(err.message||String(err))}
 };
 
-function reminderCard(r){const d=new Date(r.when),now=new Date(),cls=r.done?"done":d<now?"overdue":d.toDateString()===now.toDateString()?"today":"upcoming";const alertLabel=r.alertBefore===1440?"1 day before":r.alertBefore===60?"1 hour before":r.alertBefore?`${r.alertBefore} min before`:"at reminder time";return`<div class="task ${cls}"><div><div class="title">${esc(r.text)}</div><div class="meta">${esc(recordCollegeName(r))} · ${fmt(r.when)} · ${esc(r.type)}</div><div class="meta">Notify: ${alertLabel}${r.notificationSent?" · Sent":""}</div></div><div class="button-row"><button class="btn ghost toggleR" data-id="${r.id}">${r.done?"Undo":"Done"}</button><button class="btn ghost editR" data-id="${r.id}">Edit</button><button class="btn danger deleteR" data-id="${r.id}">Delete</button></div></div>`}
+function reminderCard(r){const d=new Date(r.when),now=new Date(),cls=r.done?"done":d<now?"overdue":d.toDateString()===now.toDateString()?"today":"upcoming";const alertLabel=r.alertBefore===1440?"1 day before":r.alertBefore===60?"1 hour before":r.alertBefore?`${r.alertBefore} min before`:"at reminder time";return`<div class="task ${cls}"><div><div class="title">${esc(r.text)}</div><div class="meta">${esc(recordCollegeName(r))} Â· ${fmt(r.when)} Â· ${esc(r.type)}</div><div class="meta">Notify: ${alertLabel}${r.notificationSent?" Â· Sent":""}</div></div><div class="button-row"><button class="btn ghost toggleR" data-id="${r.id}">${r.done?"Undo":"Done"}</button><button class="btn ghost editR" data-id="${r.id}">Edit</button><button class="btn danger deleteR" data-id="${r.id}">Delete</button></div></div>`}
 function bindReminder(){document.querySelectorAll(".toggleR").forEach(b=>b.onclick=async()=>{const r=db.reminders.find(x=>x.id===b.dataset.id);const {error}=await sb.from("reminders").update({done:!r.done,updated_at:new Date().toISOString()}).eq("id",r.id);if(error)return alert(error.message);await loadAll()});document.querySelectorAll(".editR").forEach(b=>b.onclick=()=>openForm("reminder",b.dataset.id));document.querySelectorAll(".deleteR").forEach(b=>b.onclick=async()=>{if(confirm("Delete this reminder?")){const {error}=await sb.from("reminders").delete().eq("id",b.dataset.id);if(error)return alert(error.message);await loadAll()}})}
 function renderToday(){const start=new Date();start.setHours(0,0,0,0);const end=new Date();end.setHours(23,59,59,999);$("todayDate").textContent=new Date().toLocaleDateString([],{weekday:"long",year:"numeric",month:"long",day:"numeric"});$("statColleges").textContent=db.colleges.length;$("statToday").textContent=db.meetings.filter(m=>new Date(m.date)>=start&&new Date(m.date)<=end).length+db.reminders.filter(r=>!r.done&&new Date(r.when)>=start&&new Date(r.when)<=end).length;$("statOverdue").textContent=db.reminders.filter(r=>!r.done&&new Date(r.when)<start).length;$("statHigh").textContent=db.colleges.filter(c=>c.interest==="Hot").length;const tasks=db.reminders.filter(r=>!r.done&&new Date(r.when)<=end);$("todayTasks").innerHTML=tasks.length?tasks.map(reminderCard).join(""):'<div class="empty">Nothing overdue or scheduled for today.</div>';$("attentionList").innerHTML=db.colleges.filter(c=>!c.nextAction).map(c=>`<div class="list-card"><div class="title">${esc(c.name)}</div><div class="meta">No next action set</div></div>`).join("")||'<div class="empty">All colleges have clear next actions.</div>';bindReminder()}
 function renderColleges(){
@@ -449,11 +449,62 @@ function renderColleges(){
   document.querySelectorAll(".editCollege").forEach(b=>b.onclick=()=>openForm("college",b.dataset.id));
   document.querySelectorAll(".timelineCollege").forEach(b=>b.onclick=()=>window.HARSHA_CRM_PRO?.openCollegeTimeline?.(b.dataset.id));
 }
-function renderMeetings(){$("meetingList").innerHTML=db.meetings.length?db.meetings.map(m=>`<article class="list-card"><div class="entity-top"><div><div class="title">${esc(m.topic)}</div><div class="meta">${esc(recordCollegeName(m))} · ${fmt(m.date)}</div></div><span class="pill">${esc(m.feedback)}</span></div><div style="margin-top:8px">${esc(m.notes)}</div><div class="button-row" style="margin-top:10px"><button class="btn ghost editM" data-id="${m.id}">Edit</button><button class="btn danger deleteM" data-id="${m.id}">Delete</button></div></article>`).join(""):'<div class="empty">No meeting notes saved.</div>';document.querySelectorAll(".editM").forEach(b=>b.onclick=()=>openForm("meeting",b.dataset.id));document.querySelectorAll(".deleteM").forEach(b=>b.onclick=async()=>{if(confirm("Delete this meeting note?")){const {error}=await sb.from("meeting_notes").delete().eq("id",b.dataset.id);if(error)return alert(error.message);await loadAll()}})}
+function renderMeetings(){$("meetingList").innerHTML=db.meetings.length?db.meetings.map(m=>`<article class="list-card"><div class="entity-top"><div><div class="title">${esc(m.topic)}</div><div class="meta">${esc(recordCollegeName(m))} Â· ${fmt(m.date)}</div></div><span class="pill">${esc(m.feedback)}</span></div><div style="margin-top:8px">${esc(m.notes)}</div><div class="button-row" style="margin-top:10px"><button class="btn ghost editM" data-id="${m.id}">Edit</button><button class="btn danger deleteM" data-id="${m.id}">Delete</button></div></article>`).join(""):'<div class="empty">No meeting notes saved.</div>';document.querySelectorAll(".editM").forEach(b=>b.onclick=()=>openForm("meeting",b.dataset.id));document.querySelectorAll(".deleteM").forEach(b=>b.onclick=async()=>{if(confirm("Delete this meeting note?")){const {error}=await sb.from("meeting_notes").delete().eq("id",b.dataset.id);if(error)return alert(error.message);await loadAll()}})}
+function renderContacts(){
+  const grid = $("contactGrid");
+  if(!grid) return;
+
+  grid.innerHTML = db.contacts.length
+    ? db.contacts.map(c => `
+      <article class="entity-card">
+        <div class="entity-top">
+          <div>
+            <h3>${esc(c.name)}</h3>
+            <div class="meta">${esc(c.designation || "Designation not added")}</div>
+          </div>
+          <span class="pill">${esc(c.preferred || "Phone")}</span>
+        </div>
+
+        <div class="contact-box">
+          <div class="title">${esc(recordCollegeName(c))}</div>
+          <div class="meta">${esc(c.department || "Department not added")}</div>
+          <div class="meta">${esc(c.phone || "Phone not added")}</div>
+          <div class="meta">${esc(c.email || "Email not added")}</div>
+        </div>
+
+        ${c.note ? `<div class="next-box"><div class="meta">${esc(c.note)}</div></div>` : ""}
+
+        <div class="button-row" style="margin-top:10px">
+          <button class="btn ghost editContact" data-id="${c.id}">Edit</button>
+          <button class="btn danger deleteContact" data-id="${c.id}">Delete</button>
+        </div>
+      </article>
+    `).join("")
+    : '<div class="empty">No contacts added yet.</div>';
+
+  document.querySelectorAll(".editContact").forEach(b => {
+    b.onclick = () => openForm("contact", b.dataset.id);
+  });
+
+  document.querySelectorAll(".deleteContact").forEach(b => {
+    b.onclick = async () => {
+      if(!confirm("Delete this contact?")) return;
+
+      const { error } = await sb
+        .from("contacts")
+        .delete()
+        .eq("id", b.dataset.id);
+
+      if(error) return alert(error.message);
+
+      await loadAll();
+    };
+  });
+}
 function renderReminders(){$("reminderList").innerHTML=db.reminders.length?db.reminders.map(reminderCard).join(""):'<div class="empty">No reminders added yet.</div>';bindReminder()}
-function renderRequirements(){const f=$("requirementFilter").value;const rows=db.requirements.filter(r=>!f||r.collegeId===f);$("requirementList").innerHTML=rows.length?rows.map(r=>`<article class="list-card"><div class="title">${esc(r.title)}</div><div class="meta">${esc(recordCollegeName(r))} · ${esc(r.priority)} · ${esc(r.status)}</div><div style="margin-top:8px">${esc(r.description)}</div><div class="button-row" style="margin-top:10px"><button class="btn ghost editQ" data-id="${r.id}">Edit</button><button class="btn danger deleteQ" data-id="${r.id}">Delete</button></div></article>`).join(""):'<div class="empty">No requirements found.</div>';document.querySelectorAll(".editQ").forEach(b=>b.onclick=()=>openForm("requirement",b.dataset.id));document.querySelectorAll(".deleteQ").forEach(b=>b.onclick=async()=>{if(confirm("Delete this requirement?")){const {error}=await sb.from("requirements").delete().eq("id",b.dataset.id);if(error)return alert(error.message);await loadAll()}})}
+function renderRequirements(){const f=$("requirementFilter").value;const rows=db.requirements.filter(r=>!f||r.collegeId===f);$("requirementList").innerHTML=rows.length?rows.map(r=>`<article class="list-card"><div class="title">${esc(r.title)}</div><div class="meta">${esc(recordCollegeName(r))} Â· ${esc(r.priority)} Â· ${esc(r.status)}</div><div style="margin-top:8px">${esc(r.description)}</div><div class="button-row" style="margin-top:10px"><button class="btn ghost editQ" data-id="${r.id}">Edit</button><button class="btn danger deleteQ" data-id="${r.id}">Delete</button></div></article>`).join(""):'<div class="empty">No requirements found.</div>';document.querySelectorAll(".editQ").forEach(b=>b.onclick=()=>openForm("requirement",b.dataset.id));document.querySelectorAll(".deleteQ").forEach(b=>b.onclick=async()=>{if(confirm("Delete this requirement?")){const {error}=await sb.from("requirements").delete().eq("id",b.dataset.id);if(error)return alert(error.message);await loadAll()}})}
 function renderCalendar(){const y=month.getFullYear(),m=month.getMonth();$("calendarTitle").textContent=month.toLocaleDateString([],{month:"long",year:"numeric"});const first=new Date(y,m,1),days=new Date(y,m+1,0).getDate();let h=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].map(x=>`<div class="dow">${x}</div>`).join("");for(let i=0;i<first.getDay();i++)h+='<div class="day blank"></div>';for(let d=1;d<=days;d++){const iso=`${y}-${String(m+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;const ev=[...db.calendarNotes.filter(n=>n.date===iso).map(n=>({c:"n",t:n.text})),...db.reminders.filter(r=>r.when.slice(0,10)===iso).map(r=>({c:"r",t:r.text})),...db.meetings.filter(x=>x.date.slice(0,10)===iso).map(x=>({c:"m",t:x.topic}))];h+=`<div class="day ${new Date(y,m,d).toDateString()===new Date().toDateString()?"today":""}" data-day="${iso}"><b>${d}</b>${ev.slice(0,3).map(e=>`<div class="event ${e.c}">${esc(e.t)}</div>`).join("")}</div>`}$("calendarGrid").innerHTML=h;document.querySelectorAll("[data-day]").forEach(x=>x.onclick=()=>openDay(x.dataset.day))}
-function openDay(date){selectedDay=date;$("dayHeading").textContent=new Date(date+"T12:00").toLocaleDateString([],{weekday:"long",year:"numeric",month:"long",day:"numeric"});$("dayNote").value=db.calendarNotes.find(n=>n.date===date)?.text||"";$("dayItems").innerHTML=[...db.reminders.filter(r=>r.when.slice(0,10)===date).map(r=>r.text),...db.meetings.filter(m=>m.date.slice(0,10)===date).map(m=>m.topic+" — "+recordCollegeName(m))].map(x=>`<div class="list-card">${esc(x)}</div>`).join("")||'<div class="empty">No activities on this date.</div>';$("dayDialog").showModal()}
+function openDay(date){selectedDay=date;$("dayHeading").textContent=new Date(date+"T12:00").toLocaleDateString([],{weekday:"long",year:"numeric",month:"long",day:"numeric"});$("dayNote").value=db.calendarNotes.find(n=>n.date===date)?.text||"";$("dayItems").innerHTML=[...db.reminders.filter(r=>r.when.slice(0,10)===date).map(r=>r.text),...db.meetings.filter(m=>m.date.slice(0,10)===date).map(m=>m.topic+" â€” "+recordCollegeName(m))].map(x=>`<div class="list-card">${esc(x)}</div>`).join("")||'<div class="empty">No activities on this date.</div>';$("dayDialog").showModal()}
 $("prevMonth").onclick=()=>{month=new Date(month.getFullYear(),month.getMonth()-1,1);renderCalendar()};$("nextMonth").onclick=()=>{month=new Date(month.getFullYear(),month.getMonth()+1,1);renderCalendar()};$("dayReminder").onclick=()=>{closeDialog("dayDialog");openForm("reminder","",selectedDay)};$("dayMeeting").onclick=()=>{closeDialog("dayDialog");openForm("meeting","",selectedDay)};$("saveDayNote").onclick=async()=>{const text=$("dayNote").value.trim();const existing=db.calendarNotes.find(n=>n.date===selectedDay);let res;if(existing)res=await sb.from("calendar_notes").update({note_text:text,updated_at:new Date().toISOString()}).eq("id",existing.id);else res=await sb.from("calendar_notes").insert({user_id:user.id,note_date:selectedDay,note_text:text});if(res.error)return alert(res.error.message);closeDialog("dayDialog");await loadAll();toast("Date note saved")};$("deleteDayNote").onclick=async()=>{const existing=db.calendarNotes.find(n=>n.date===selectedDay);if(existing){const {error}=await sb.from("calendar_notes").delete().eq("id",existing.id);if(error)return alert(error.message)}closeDialog("dayDialog");await loadAll()}
 function renderAll(){refreshCollegeSuggestions();$("requirementFilter").innerHTML='<option value="">All linked college profiles</option>'+db.colleges.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join("");renderToday();renderColleges();renderMeetings();renderContacts();renderReminders();renderRequirements();renderCalendar()}
 $("collegeSearch").oninput=renderColleges;$("requirementFilter").onchange=renderRequirements;
@@ -463,3 +514,4 @@ window.HARSHA_CRM={get sb(){return sb},get user(){return user},get db(){return d
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 init();
 })();
+
