@@ -9,7 +9,7 @@ const fmt=v=>v?new Date(v).toLocaleString([], {dateStyle:"medium",timeStyle:"sho
 const isoLocal=v=>v?new Date(v).toISOString():"";
 const localNow=()=>new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,16);
 const CACHE_KEY="harsha_supabase_cache_v1";
-let sb=null,user=null,month=new Date(),selectedDay="";
+let sb=null,user=null,month=new Date(),selectedDay="",loadAllPromise=null;
 let db={colleges:[],contacts:[],meetings:[],reminders:[],requirements:[],calendarNotes:[]};
 let oneSignalReady=false,oneSignalInstance=null;
 
@@ -41,14 +41,20 @@ async function resolveCollege(name,createIfMissing=false){
   if(existing)return {collegeId:existing.id,collegeName:existing.name};
   if(!createIfMissing)return {collegeId:null,collegeName:clean};
   const {data,error}=await sb.from("colleges").insert({
-    user_id:user.id,name:clean,stage:"New",interest:"Unknown",updated_at:new Date().toISOString()
+    user_id:user.id,name:clean,stage:"New Lead",interest:"Unknown",updated_at:new Date().toISOString()
   }).select().single();
   if(error)throw error;
   return {collegeId:data.id,collegeName:data.name};
 }
 function closeDialog(id){const d=$(id);if(d?.open)d.close()}
 function showAuth(){$("authView").classList.remove("hidden");$("appView").classList.add("hidden")}
-function showApp(){$("authView").classList.add("hidden");$("appView").classList.remove("hidden");$("userEmail").textContent=user?.email||"";renderAll();setTimeout(refreshPushStatus,200);setTimeout(initOneSignalForUser,250);setTimeout(()=>window.dispatchEvent(new CustomEvent("harsha:app-ready")),350)}
+function showApp(){
+  $("authView").classList.add("hidden");$("appView").classList.remove("hidden");$("userEmail").textContent=user?.email||"";
+  // Paint cached data immediately so navigation never waits for the network.
+  renderAll();
+  setTimeout(refreshPushStatus,200);setTimeout(initOneSignalForUser,250);
+  window.dispatchEvent(new CustomEvent("harsha:app-ready"));
+}
 
 
 
@@ -231,26 +237,33 @@ async function enablePushNotifications(){
 
 async function loadAll(){
   if(!user)return;
-  setSync("saving","Syncing");
-  const [c,ct,m,r,q,n]=await Promise.all([
-    sb.from("colleges").select("*").eq("user_id",user.id).order("created_at",{ascending:false}),
-    sb.from("contacts").select("*").eq("user_id",user.id).order("name"),
-    sb.from("meeting_notes").select("*").eq("user_id",user.id).order("meeting_at",{ascending:false}),
-    sb.from("reminders").select("*").eq("user_id",user.id).order("remind_at"),
-    sb.from("requirements").select("*").eq("user_id",user.id).order("updated_at",{ascending:false}),
-    sb.from("calendar_notes").select("*").eq("user_id",user.id)
-  ]);
-  const err=[c,ct,m,r,q,n].find(x=>x.error)?.error;
-  if(err){setSync("error","Sync failed");toast(err.message);return}
-  db={
-    colleges:c.data.map(x=>({id:x.id,name:x.name,location:x.location||"",students:x.relevant_students||0,affiliationType:x.affiliation_type||"Anna University Affiliated",parentUniversity:x.parent_university||"",stage:x.stage||"New Lead",interest:x.interest||"Unknown",contactName:x.main_contact_name||"",contactDesignation:x.main_contact_designation||"",contactPhone:x.main_contact_phone||"",contactEmail:x.main_contact_email||"",nextAction:x.next_action||"",nextDate:x.next_action_at||"",blocker:x.blocker||"",notes:x.notes||""})),
-    contacts:ct.data.map(x=>({id:x.id,collegeId:x.college_id,collegeName:x.college_name||"",name:x.name,designation:x.designation||"",phone:x.phone||"",email:x.email||"",department:x.department||"",preferred:x.preferred_contact||"Phone",note:x.note||""})),
-    meetings:m.data.map(x=>({id:x.id,collegeId:x.college_id,collegeName:x.college_name||"",topic:x.topic,notes:x.notes,person:x.person_met||"",feedback:x.feedback||"Neutral",date:x.meeting_at,action:x.next_action||"",followup:x.followup_at||""})),
-    reminders:r.data.map(x=>({id:x.id,collegeId:x.college_id,collegeName:x.college_name||"",text:x.reminder_text,when:x.remind_at,type:x.reminder_type||"Follow-up",done:!!x.done,note:x.note||"",alertBefore:Number(x.alert_before_minutes||0),notificationSent:!!x.notification_sent})),
-    requirements:q.data.map(x=>({id:x.id,collegeId:x.college_id,collegeName:x.college_name||"",title:x.title,description:x.description,priority:x.priority||"Medium",status:x.status||"New",requestedBy:x.requested_by||"",updatedAt:x.updated_at})),
-    calendarNotes:n.data.map(x=>({id:x.id,date:x.note_date,text:x.note_text}))
-  };
-  cacheSave();setSync("online","Cloud saved");renderAll();
+  // Prevent duplicate six-table refreshes during auth/session events or rapid saves.
+  if(loadAllPromise)return loadAllPromise;
+  loadAllPromise=(async()=>{
+    setSync("saving","Syncing");
+    const [c,ct,m,r,q,n]=await Promise.all([
+      sb.from("colleges").select("*").eq("user_id",user.id).order("created_at",{ascending:false}),
+      sb.from("contacts").select("*").eq("user_id",user.id).order("name"),
+      sb.from("meeting_notes").select("*").eq("user_id",user.id).order("meeting_at",{ascending:false}),
+      sb.from("reminders").select("*").eq("user_id",user.id).order("remind_at"),
+      sb.from("requirements").select("*").eq("user_id",user.id).order("updated_at",{ascending:false}),
+      sb.from("calendar_notes").select("*").eq("user_id",user.id)
+    ]);
+    const err=[c,ct,m,r,q,n].find(x=>x.error)?.error;
+    if(err){setSync("error","Sync failed");toast(err.message);return}
+    db={
+      colleges:c.data.map(x=>({id:x.id,name:x.name,location:x.location||"",students:x.relevant_students||0,affiliationType:x.affiliation_type||"Anna University Affiliated",parentUniversity:x.parent_university||"",stage:x.stage||"New Lead",interest:x.interest||"Unknown",contactName:x.main_contact_name||"",contactDesignation:x.main_contact_designation||"",contactPhone:x.main_contact_phone||"",contactEmail:x.main_contact_email||"",nextAction:x.next_action||"",nextDate:x.next_action_at||"",blocker:x.blocker||"",notes:x.notes||""})),
+      contacts:ct.data.map(x=>({id:x.id,collegeId:x.college_id,collegeName:x.college_name||"",name:x.name,designation:x.designation||"",phone:x.phone||"",email:x.email||"",department:x.department||"",preferred:x.preferred_contact||"Phone",note:x.note||""})),
+      meetings:m.data.map(x=>({id:x.id,collegeId:x.college_id,collegeName:x.college_name||"",topic:x.topic,notes:x.notes,person:x.person_met||"",feedback:x.feedback||"Neutral",date:x.meeting_at,action:x.next_action||"",followup:x.followup_at||""})),
+      reminders:r.data.map(x=>({id:x.id,collegeId:x.college_id,collegeName:x.college_name||"",text:x.reminder_text,when:x.remind_at,type:x.reminder_type||"Follow-up",done:!!x.done,note:x.note||"",alertBefore:Number(x.alert_before_minutes||0),notificationSent:!!x.notification_sent})),
+      requirements:q.data.map(x=>({id:x.id,collegeId:x.college_id,collegeName:x.college_name||"",title:x.title,description:x.description,priority:x.priority||"Medium",status:x.status||"New",requestedBy:x.requested_by||"",updatedAt:x.updated_at})),
+      calendarNotes:n.data.map(x=>({id:x.id,date:x.note_date,text:x.note_text}))
+    };
+    cacheSave();setSync("online","Cloud saved");renderAll();
+    // CRM Professional can now re-render against the fresh college/reminder data.
+    window.dispatchEvent(new CustomEvent("harsha:base-data-ready"));
+  })();
+  try{return await loadAllPromise}finally{loadAllPromise=null}
 }
 
 async function init(){
@@ -267,7 +280,28 @@ $("forgotBtn").onclick=async()=>{if(!configured())return $("configWarning").clas
 $("signOutBtn").onclick=()=>sb.auth.signOut();
 $("enablePushBtn").onclick=enablePushNotifications;
 
-document.querySelectorAll("[data-view]").forEach(btn=>btn.onclick=()=>{const v=btn.dataset.view;document.querySelectorAll(".view").forEach(x=>x.classList.toggle("active",x.id===v));document.querySelectorAll("[data-view]").forEach(x=>x.classList.toggle("active",x.dataset.view===v));renderAll()});
+const primaryMobileViews=new Set(["today","colleges","pipeline","calendar"]);
+function renderView(v){
+  if(v==="today")renderToday();
+  else if(v==="colleges")renderColleges();
+  else if(v==="calendar")renderCalendar();
+  else if(v==="meetings")renderMeetings();
+  else if(v==="contacts")renderContacts();
+  else if(v==="reminders")renderReminders();
+  else if(v==="requirements")renderRequirements();
+  else if(v==="notifications")refreshNotificationCenter();
+  window.HARSHA_CRM_PRO?.renderView?.(v);
+}
+function activateView(v){
+  document.querySelectorAll(".view").forEach(x=>x.classList.toggle("active",x.id===v));
+  document.querySelectorAll("[data-view]").forEach(x=>x.classList.toggle("active",x.dataset.view===v));
+  const more=$("mobileMoreBtn");if(more)more.classList.toggle("active",!primaryMobileViews.has(v));
+  closeDialog("mobileMoreDialog");
+  // Only render the page the user opened. Previously every click rebuilt every screen.
+  renderView(v);
+  window.scrollTo({top:0,behavior:"auto"});
+}
+document.querySelectorAll("[data-view]").forEach(btn=>btn.onclick=()=>activateView(btn.dataset.view));
 if($("oneSignalEnableBtn"))$("oneSignalEnableBtn").onclick=enableOneSignalNotifications;
 if($("sendTestNotificationBtn"))$("sendTestNotificationBtn").onclick=sendTestNotification;
 if($("refreshNotificationStatusBtn"))$("refreshNotificationStatusBtn").onclick=refreshNotificationCenter;
@@ -276,6 +310,7 @@ document.querySelectorAll("[data-close]").forEach(btn=>btn.onclick=()=>closeDial
 document.querySelectorAll("dialog").forEach(d=>d.onclick=e=>{if(e.target===d)d.close()});
 document.querySelectorAll("[data-open]").forEach(btn=>btn.onclick=()=>openForm(btn.dataset.open));
 $("quickAddTop").onclick=()=>$("quickDialog").showModal();$("mobileFab").onclick=()=>$("quickDialog").showModal();
+if($("mobileMoreBtn"))$("mobileMoreBtn").onclick=()=>$("mobileMoreDialog").showModal();
 document.querySelectorAll("[data-quick]").forEach(btn=>btn.onclick=()=>{closeDialog("quickDialog");openForm(btn.dataset.quick)});
 
 function openForm(type,id="",date=""){
@@ -383,7 +418,7 @@ $("requirementForm").onsubmit=async e=>{
 
 function reminderCard(r){const d=new Date(r.when),now=new Date(),cls=r.done?"done":d<now?"overdue":d.toDateString()===now.toDateString()?"today":"upcoming";const alertLabel=r.alertBefore===1440?"1 day before":r.alertBefore===60?"1 hour before":r.alertBefore?`${r.alertBefore} min before`:"at reminder time";return`<div class="task ${cls}"><div><div class="title">${esc(r.text)}</div><div class="meta">${esc(recordCollegeName(r))} · ${fmt(r.when)} · ${esc(r.type)}</div><div class="meta">Notify: ${alertLabel}${r.notificationSent?" · Sent":""}</div></div><div class="button-row"><button class="btn ghost toggleR" data-id="${r.id}">${r.done?"Undo":"Done"}</button><button class="btn ghost editR" data-id="${r.id}">Edit</button><button class="btn danger deleteR" data-id="${r.id}">Delete</button></div></div>`}
 function bindReminder(){document.querySelectorAll(".toggleR").forEach(b=>b.onclick=async()=>{const r=db.reminders.find(x=>x.id===b.dataset.id);const {error}=await sb.from("reminders").update({done:!r.done,updated_at:new Date().toISOString()}).eq("id",r.id);if(error)return alert(error.message);await loadAll()});document.querySelectorAll(".editR").forEach(b=>b.onclick=()=>openForm("reminder",b.dataset.id));document.querySelectorAll(".deleteR").forEach(b=>b.onclick=async()=>{if(confirm("Delete this reminder?")){const {error}=await sb.from("reminders").delete().eq("id",b.dataset.id);if(error)return alert(error.message);await loadAll()}})}
-function renderToday(){const start=new Date();start.setHours(0,0,0,0);const end=new Date();end.setHours(23,59,59,999);$("todayDate").textContent=new Date().toLocaleDateString([],{weekday:"long",year:"numeric",month:"long",day:"numeric"});$("statColleges").textContent=db.colleges.length;$("statToday").textContent=db.meetings.filter(m=>new Date(m.date)>=start&&new Date(m.date)<=end).length+db.reminders.filter(r=>!r.done&&new Date(r.when)>=start&&new Date(r.when)<=end).length;$("statOverdue").textContent=db.reminders.filter(r=>!r.done&&new Date(r.when)<start).length;$("statHigh").textContent=db.colleges.filter(c=>c.interest==="High").length;const tasks=db.reminders.filter(r=>!r.done&&new Date(r.when)<=end);$("todayTasks").innerHTML=tasks.length?tasks.map(reminderCard).join(""):'<div class="empty">Nothing overdue or scheduled for today.</div>';$("attentionList").innerHTML=db.colleges.filter(c=>!c.nextAction).map(c=>`<div class="list-card"><div class="title">${esc(c.name)}</div><div class="meta">No next action set</div></div>`).join("")||'<div class="empty">All colleges have clear next actions.</div>';bindReminder()}
+function renderToday(){const start=new Date();start.setHours(0,0,0,0);const end=new Date();end.setHours(23,59,59,999);$("todayDate").textContent=new Date().toLocaleDateString([],{weekday:"long",year:"numeric",month:"long",day:"numeric"});$("statColleges").textContent=db.colleges.length;$("statToday").textContent=db.meetings.filter(m=>new Date(m.date)>=start&&new Date(m.date)<=end).length+db.reminders.filter(r=>!r.done&&new Date(r.when)>=start&&new Date(r.when)<=end).length;$("statOverdue").textContent=db.reminders.filter(r=>!r.done&&new Date(r.when)<start).length;$("statHigh").textContent=db.colleges.filter(c=>c.interest==="Hot").length;const tasks=db.reminders.filter(r=>!r.done&&new Date(r.when)<=end);$("todayTasks").innerHTML=tasks.length?tasks.map(reminderCard).join(""):'<div class="empty">Nothing overdue or scheduled for today.</div>';$("attentionList").innerHTML=db.colleges.filter(c=>!c.nextAction).map(c=>`<div class="list-card"><div class="title">${esc(c.name)}</div><div class="meta">No next action set</div></div>`).join("")||'<div class="empty">All colleges have clear next actions.</div>';bindReminder()}
 function renderColleges(){
   const q=$("collegeSearch").value.toLowerCase();
   const rows=db.colleges.filter(c=>[c.name,c.location,c.contactName,c.affiliationType,c.parentUniversity,c.stage].join(" ").toLowerCase().includes(q));
@@ -420,11 +455,11 @@ function renderRequirements(){const f=$("requirementFilter").value;const rows=db
 function renderCalendar(){const y=month.getFullYear(),m=month.getMonth();$("calendarTitle").textContent=month.toLocaleDateString([],{month:"long",year:"numeric"});const first=new Date(y,m,1),days=new Date(y,m+1,0).getDate();let h=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].map(x=>`<div class="dow">${x}</div>`).join("");for(let i=0;i<first.getDay();i++)h+='<div class="day blank"></div>';for(let d=1;d<=days;d++){const iso=`${y}-${String(m+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;const ev=[...db.calendarNotes.filter(n=>n.date===iso).map(n=>({c:"n",t:n.text})),...db.reminders.filter(r=>r.when.slice(0,10)===iso).map(r=>({c:"r",t:r.text})),...db.meetings.filter(x=>x.date.slice(0,10)===iso).map(x=>({c:"m",t:x.topic}))];h+=`<div class="day ${new Date(y,m,d).toDateString()===new Date().toDateString()?"today":""}" data-day="${iso}"><b>${d}</b>${ev.slice(0,3).map(e=>`<div class="event ${e.c}">${esc(e.t)}</div>`).join("")}</div>`}$("calendarGrid").innerHTML=h;document.querySelectorAll("[data-day]").forEach(x=>x.onclick=()=>openDay(x.dataset.day))}
 function openDay(date){selectedDay=date;$("dayHeading").textContent=new Date(date+"T12:00").toLocaleDateString([],{weekday:"long",year:"numeric",month:"long",day:"numeric"});$("dayNote").value=db.calendarNotes.find(n=>n.date===date)?.text||"";$("dayItems").innerHTML=[...db.reminders.filter(r=>r.when.slice(0,10)===date).map(r=>r.text),...db.meetings.filter(m=>m.date.slice(0,10)===date).map(m=>m.topic+" — "+recordCollegeName(m))].map(x=>`<div class="list-card">${esc(x)}</div>`).join("")||'<div class="empty">No activities on this date.</div>';$("dayDialog").showModal()}
 $("prevMonth").onclick=()=>{month=new Date(month.getFullYear(),month.getMonth()-1,1);renderCalendar()};$("nextMonth").onclick=()=>{month=new Date(month.getFullYear(),month.getMonth()+1,1);renderCalendar()};$("dayReminder").onclick=()=>{closeDialog("dayDialog");openForm("reminder","",selectedDay)};$("dayMeeting").onclick=()=>{closeDialog("dayDialog");openForm("meeting","",selectedDay)};$("saveDayNote").onclick=async()=>{const text=$("dayNote").value.trim();const existing=db.calendarNotes.find(n=>n.date===selectedDay);let res;if(existing)res=await sb.from("calendar_notes").update({note_text:text,updated_at:new Date().toISOString()}).eq("id",existing.id);else res=await sb.from("calendar_notes").insert({user_id:user.id,note_date:selectedDay,note_text:text});if(res.error)return alert(res.error.message);closeDialog("dayDialog");await loadAll();toast("Date note saved")};$("deleteDayNote").onclick=async()=>{const existing=db.calendarNotes.find(n=>n.date===selectedDay);if(existing){const {error}=await sb.from("calendar_notes").delete().eq("id",existing.id);if(error)return alert(error.message)}closeDialog("dayDialog");await loadAll()}
-function renderAll(){refreshCollegeSuggestions();setTimeout(refreshNotificationCenter,100);$("requirementFilter").innerHTML='<option value="">All linked college profiles</option>'+db.colleges.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join("");renderToday();renderColleges();renderMeetings();renderContacts();renderReminders();renderRequirements();renderCalendar()}
+function renderAll(){refreshCollegeSuggestions();$("requirementFilter").innerHTML='<option value="">All linked college profiles</option>'+db.colleges.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join("");renderToday();renderColleges();renderMeetings();renderContacts();renderReminders();renderRequirements();renderCalendar()}
 $("collegeSearch").oninput=renderColleges;$("requirementFilter").onchange=renderRequirements;
 function download(name,text,type){const a=document.createElement("a"),blob=new Blob([text],{type});a.href=URL.createObjectURL(blob);a.download=name;a.click();URL.revokeObjectURL(a.href)}function exportJSON(){download("harsha-college-assistant-backup.json",JSON.stringify(db,null,2),"application/json")}$("exportTop").onclick=exportJSON;$("jsonExport").onclick=exportJSON;$("csvExport").onclick=()=>{const rows=["College,Location,Students,Main Contact,Designation,Phone,Email"];db.colleges.forEach(c=>rows.push([c.name,c.location,c.students,c.contactName,c.contactDesignation,c.contactPhone,c.contactEmail].map(v=>`"${String(v??"").replace(/"/g,'""')}"`).join(",")));download("harsha-colleges.csv",rows.join("\n"),"text/csv")};
 
-window.HARSHA_CRM={get sb(){return sb},get user(){return user},get db(){return db},loadAll,toast,esc,fmt,recordCollegeName,localNow,openForm,closeDialog};
+window.HARSHA_CRM={get sb(){return sb},get user(){return user},get db(){return db},loadAll,toast,esc,fmt,recordCollegeName,localNow,openForm,closeDialog,activateView,renderView};
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 init();
 })();

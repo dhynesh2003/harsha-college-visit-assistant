@@ -2,7 +2,14 @@
 "use strict";
 const $=id=>document.getElementById(id);
 const stages=["New Lead","Contacted","Visit Planned","Visited","Interested","Demo Required","Demo Completed","Proposal Required","Proposal Sent","Approval Pending","Negotiation","Won / Onboarding","Lost","Dormant"];
-const state={visits:[],activities:[],opportunities:[],files:[],ready:false,error:null};
+const PRO_CACHE_KEY="harsha_crm_pro_cache_v2";
+const state={visits:[],activities:[],opportunities:[],files:[],ready:false,error:null,loadPromise:null};
+function cacheLoad(){
+ try{const x=JSON.parse(localStorage.getItem(PRO_CACHE_KEY));if(x){state.visits=x.visits||[];state.activities=x.activities||[];state.opportunities=x.opportunities||[];state.files=x.files||[];state.ready=true}}catch{}
+}
+function cacheSave(){
+ try{localStorage.setItem(PRO_CACHE_KEY,JSON.stringify({visits:state.visits,activities:state.activities,opportunities:state.opportunities,files:state.files,savedAt:Date.now()}))}catch{}
+}
 const crm=()=>window.HARSHA_CRM;
 const esc=s=>crm()?.esc?.(s??"")??String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
 const fmt=v=>crm()?.fmt?.(v)||"";
@@ -16,15 +23,20 @@ const money=n=>new Intl.NumberFormat("en-IN",{style:"currency",currency:"INR",ma
 
 async function load(){
  if(!user()||!sb())return;
- const [v,a,o,f]=await Promise.all([
-   sb().from("crm_visits").select("*").eq("user_id",user().id).order("visit_at",{ascending:false}),
-   sb().from("crm_activities").select("*").eq("user_id",user().id).order("occurred_at",{ascending:false}),
-   sb().from("crm_opportunities").select("*").eq("user_id",user().id).order("updated_at",{ascending:false}),
-   sb().from("crm_files").select("*").eq("user_id",user().id).order("created_at",{ascending:false})
- ]);
- const bad=[v,a,o,f].find(x=>x.error);
- if(bad){state.error=bad.error;state.ready=false;renderMigrationNeeded();return}
- state.visits=v.data||[];state.activities=a.data||[];state.opportunities=o.data||[];state.files=f.data||[];state.ready=true;state.error=null;renderAll();
+ if(state.loadPromise)return state.loadPromise;
+ state.loadPromise=(async()=>{
+   const [v,a,o,f]=await Promise.all([
+     sb().from("crm_visits").select("*").eq("user_id",user().id).order("visit_at",{ascending:false}),
+     sb().from("crm_activities").select("*").eq("user_id",user().id).order("occurred_at",{ascending:false}),
+     sb().from("crm_opportunities").select("*").eq("user_id",user().id).order("updated_at",{ascending:false}),
+     sb().from("crm_files").select("*").eq("user_id",user().id).order("created_at",{ascending:false})
+   ]);
+   const bad=[v,a,o,f].find(x=>x.error);
+   if(bad){state.error=bad.error;if(!state.ready){state.ready=false;renderMigrationNeeded()}return}
+   state.visits=v.data||[];state.activities=a.data||[];state.opportunities=o.data||[];state.files=f.data||[];
+   state.ready=true;state.error=null;cacheSave();renderAll();
+ })();
+ try{return await state.loadPromise}finally{state.loadPromise=null}
 }
 function renderMigrationNeeded(){
  ["pipelineBoard","visitList","activityTimeline","fileGrid","reportMetrics"].forEach(id=>{if($(id))$(id).innerHTML='<div class="empty pro-migration-warning"><b>CRM Professional tables are not ready.</b><br>Run <code>CRM_PRO_V4_MIGRATION.sql</code> once in Supabase SQL Editor, then refresh.</div>'});
@@ -197,11 +209,31 @@ async function saveVisit(e){
  crm().toast("Structured visit saved");
 }
 async function saveActivity(e){e.preventDefault();const id=$("activityId").value,ref=await collegeRef($("activityCollege").value);const payload={user_id:user().id,...ref,activity_type:$("activityType").value,title:$("activityTitle").value.trim(),details:$("activityDetails").value.trim(),occurred_at:new Date($("activityAt").value).toISOString(),contact_name:$("activityContact").value.trim(),outcome:$("activityOutcome").value,next_action:$("activityNextAction").value.trim(),follow_up_at:$("activityFollowup").value?new Date($("activityFollowup").value).toISOString():null,updated_at:new Date().toISOString()};const r=id?await sb().from("crm_activities").update(payload).eq("id",id):await sb().from("crm_activities").insert(payload);if(r.error)return alert(r.error.message);if(!id&&$("activityFollowup").value)await createFollowup($("activityCollege").value,`Follow up: ${payload.title}`,$("activityFollowup").value,payload.next_action);close("activityDialog");await crm().loadAll();await load();crm().toast("Activity saved")}
-async function saveOpportunity(e){e.preventDefault();const id=$("opportunityId").value,ref=await collegeRef($("opportunityCollege").value);let stage=$("opportunityStage").value,status=$("opportunityStatus").value;if(stage==="Won / Onboarding")status="Won";if(stage==="Lost")status="Lost";const payload={user_id:user().id,...ref,name:$("opportunityName").value.trim(),stage,probability:Number($("opportunityProbability").value||0),estimated_value:Number($("opportunityValue").value||0),expected_close_date:$("opportunityClose").value||null,status,lost_reason:$("opportunityLostReason").value.trim(),notes:$("opportunityNotes").value.trim(),updated_at:new Date().toISOString()};const r=id?await sb().from("crm_opportunities").update(payload).eq("id",id):await sb().from("crm_opportunities").insert(payload);if(r.error)return alert(r.error.message);close("opportunityDialog");await load();crm().toast("Opportunity saved")}
+async function saveOpportunity(e){
+ e.preventDefault();
+ const id=$("opportunityId").value,ref=await collegeRef($("opportunityCollege").value);
+ let stage=$("opportunityStage").value,status=$("opportunityStatus").value;
+ if(stage==="Won / Onboarding")status="Won";if(stage==="Lost")status="Lost";
+ const payload={user_id:user().id,...ref,name:$("opportunityName").value.trim(),stage,probability:Number($("opportunityProbability").value||0),estimated_value:Number($("opportunityValue").value||0),expected_close_date:$("opportunityClose").value||null,status,lost_reason:$("opportunityLostReason").value.trim(),notes:$("opportunityNotes").value.trim(),updated_at:new Date().toISOString()};
+ const r=id?await sb().from("crm_opportunities").update(payload).eq("id",id).select().single():await sb().from("crm_opportunities").insert(payload).select().single();
+ if(r.error)return alert(r.error.message);
+ if(id){const i=state.opportunities.findIndex(x=>x.id===id);if(i>=0)state.opportunities[i]=r.data}
+ else state.opportunities.unshift(r.data);
+ state.ready=true;cacheSave();close("opportunityDialog");renderPipeline();renderPulse();renderReports();crm().toast("Opportunity saved");
+}
 async function saveFile(e){e.preventDefault();const file=$("fileInput").files[0];if(!file)return;const ref=await collegeRef($("fileCollege").value);const safe=file.name.replace(/[^a-zA-Z0-9._-]/g,"_");const path=`${user().id}/${Date.now()}-${safe}`;const up=await sb().storage.from("crm-files").upload(path,file,{upsert:false});if(up.error)return alert(up.error.message);const meta=await sb().from("crm_files").insert({user_id:user().id,...ref,category:$("fileCategory").value,file_name:file.name,storage_path:path,mime_type:file.type,size_bytes:file.size,note:$("fileNote").value.trim()});if(meta.error){await sb().storage.from("crm-files").remove([path]);return alert(meta.error.message)}close("fileDialog");await load();crm().toast("File uploaded")}
 
 function renderPulse(){const el=$("proPulse");if(!el||!state.ready)return;const open=state.opportunities.filter(x=>x.status==="Open"),weighted=open.reduce((s,x)=>s+Number(x.estimated_value||0)*Number(x.probability||0)/100,0),next7=state.visits.filter(v=>v.status!=="Cancelled"&&new Date(v.visit_at)>=new Date()&&new Date(v.visit_at)<=new Date(Date.now()+7*86400000)).length,noResponse=state.activities.filter(a=>a.outcome==="No Response"&&new Date(a.occurred_at)>new Date(Date.now()-7*86400000)).length;el.innerHTML=`<article><span>Open pipeline</span><strong>${money(open.reduce((s,x)=>s+Number(x.estimated_value||0),0))}</strong></article><article><span>Weighted value</span><strong>${money(weighted)}</strong></article><article><span>Visits next 7 days</span><strong>${next7}</strong></article><article><span>No-response this week</span><strong>${noResponse}</strong></article>`}
-function renderPipeline(){if(!$("pipelineBoard")||!state.ready)return;const open=state.opportunities.filter(o=>o.status==="Open"),total=open.reduce((s,x)=>s+Number(x.estimated_value||0),0),weighted=open.reduce((s,x)=>s+Number(x.estimated_value||0)*Number(x.probability||0)/100,0);$("pipelineSummary").innerHTML=`<div><span>Open opportunities</span><strong>${open.length}</strong></div><div><span>Open value</span><strong>${money(total)}</strong></div><div><span>Weighted value</span><strong>${money(weighted)}</strong></div><div><span>Won</span><strong>${state.opportunities.filter(x=>x.status==="Won").length}</strong></div>`;$("pipelineBoard").innerHTML=stages.map(stage=>{const rows=state.opportunities.filter(o=>o.stage===stage);return `<section class="pipeline-column"><header><div><b>${esc(stage)}</b><span>${rows.length}</span></div><small>${money(rows.reduce((s,x)=>s+Number(x.estimated_value||0),0))}</small></header><div class="pipeline-cards">${rows.map(o=>`<article class="pipeline-card"><div class="pipeline-card-top"><strong>${esc(o.name)}</strong><span>${Number(o.probability||0)}%</span></div><div class="meta">${esc(recordCollege(o))}</div><div class="pipeline-value">${money(o.estimated_value)}</div><div class="meta">Close: ${o.expected_close_date||"Not set"}</div><select class="pipeline-stage-move" data-id="${o.id}">${stages.map(s=>`<option ${s===o.stage?"selected":""}>${esc(s)}</option>`).join("")}</select><div class="button-row"><button class="btn ghost editOpp" data-id="${o.id}">Edit</button><button class="btn danger deleteOpp" data-id="${o.id}">Delete</button></div></article>`).join("")||'<div class="pipeline-empty">No opportunities</div>'}</div></section>`}).join("");document.querySelectorAll(".editOpp").forEach(b=>b.onclick=()=>openOpportunity(b.dataset.id));document.querySelectorAll(".deleteOpp").forEach(b=>b.onclick=async()=>{if(confirm("Delete this opportunity?")){await sb().from("crm_opportunities").delete().eq("id",b.dataset.id);await load()}});document.querySelectorAll(".pipeline-stage-move").forEach(s=>s.onchange=async()=>{const stage=s.value,status=stage==="Won / Onboarding"?"Won":stage==="Lost"?"Lost":"Open";await sb().from("crm_opportunities").update({stage,status,updated_at:new Date().toISOString()}).eq("id",s.dataset.id);await load()})}
+function renderPipeline(){
+ if(!$("pipelineBoard"))return;
+ if(!state.ready){$("pipelineBoard").innerHTML='<div class="empty">Loading pipeline…</div>';return}
+ const open=state.opportunities.filter(o=>o.status==="Open"),total=open.reduce((s,x)=>s+Number(x.estimated_value||0),0),weighted=open.reduce((s,x)=>s+Number(x.estimated_value||0)*Number(x.probability||0)/100,0);
+ $("pipelineSummary").innerHTML=`<div><span>Open opportunities</span><strong>${open.length}</strong></div><div><span>Open value</span><strong>${money(total)}</strong></div><div><span>Weighted value</span><strong>${money(weighted)}</strong></div><div><span>Won</span><strong>${state.opportunities.filter(x=>x.status==="Won").length}</strong></div>`;
+ $("pipelineBoard").innerHTML=stages.map(stage=>{const rows=state.opportunities.filter(o=>o.stage===stage);return `<section class="pipeline-column"><header><div><b>${esc(stage)}</b><span>${rows.length}</span></div><small>${money(rows.reduce((s,x)=>s+Number(x.estimated_value||0),0))}</small></header><div class="pipeline-cards">${rows.map(o=>`<article class="pipeline-card"><div class="pipeline-card-top"><strong>${esc(o.name)}</strong><span>${Number(o.probability||0)}%</span></div><div class="meta">${esc(recordCollege(o))}</div><div class="pipeline-value">${money(o.estimated_value)}</div><div class="meta">Close: ${o.expected_close_date||"Not set"}</div><select class="pipeline-stage-move" data-id="${o.id}">${stages.map(s=>`<option ${s===o.stage?"selected":""}>${esc(s)}</option>`).join("")}</select><div class="button-row"><button class="btn ghost editOpp" data-id="${o.id}">Edit</button><button class="btn danger deleteOpp" data-id="${o.id}">Delete</button></div></article>`).join("")||'<div class="pipeline-empty">No opportunities</div>'}</div></section>`}).join("");
+ document.querySelectorAll(".editOpp").forEach(b=>b.onclick=()=>openOpportunity(b.dataset.id));
+ document.querySelectorAll(".deleteOpp").forEach(b=>b.onclick=async()=>{if(!confirm("Delete this opportunity?"))return;const {error}=await sb().from("crm_opportunities").delete().eq("id",b.dataset.id);if(error)return alert(error.message);state.opportunities=state.opportunities.filter(x=>x.id!==b.dataset.id);cacheSave();renderPipeline();renderPulse();renderReports()});
+ document.querySelectorAll(".pipeline-stage-move").forEach(el=>el.onchange=async()=>{const item=state.opportunities.find(x=>x.id===el.dataset.id);if(!item)return;const previous={stage:item.stage,status:item.status};const stage=el.value,status=stage==="Won / Onboarding"?"Won":stage==="Lost"?"Lost":"Open";item.stage=stage;item.status=status;item.updated_at=new Date().toISOString();cacheSave();renderPipeline();renderPulse();renderReports();const {error}=await sb().from("crm_opportunities").update({stage,status,updated_at:item.updated_at}).eq("id",item.id);if(error){item.stage=previous.stage;item.status=previous.status;cacheSave();renderPipeline();renderPulse();renderReports();alert(error.message)}});
+}
 function renderVisits(){
  if(!$("visitList")||!state.ready)return;
  const q=($("visitSearch")?.value||"").toLowerCase(),st=$("visitStatusFilter")?.value||"";
@@ -245,6 +277,14 @@ function renderFiles(){if(!$("fileGrid")||!state.ready)return;const q=($("fileSe
 async function downloadFile(id){const f=state.files.find(x=>x.id===id);if(!f)return;const {data,error}=await sb().storage.from("crm-files").createSignedUrl(f.storage_path,60);if(error)return alert(error.message);window.open(data.signedUrl,"_blank","noopener")}
 async function deleteFile(id){const f=state.files.find(x=>x.id===id);if(!f||!confirm("Delete this file?"))return;await sb().storage.from("crm-files").remove([f.storage_path]);await sb().from("crm_files").delete().eq("id",id);await load()}
 function renderReports(){if(!$("reportMetrics")||!state.ready)return;const won=state.opportunities.filter(x=>x.status==="Won"),lost=state.opportunities.filter(x=>x.status==="Lost"),open=state.opportunities.filter(x=>x.status==="Open"),conversion=(won.length+lost.length)?Math.round(won.length/(won.length+lost.length)*100):0,overdue=base().reminders.filter(r=>!r.done&&new Date(r.when)<new Date()).length,monthStart=new Date();monthStart.setDate(1);monthStart.setHours(0,0,0,0);const visits=state.visits.filter(v=>new Date(v.visit_at)>=monthStart).length;$("reportMetrics").innerHTML=`<article><span>Open pipeline</span><strong>${money(open.reduce((s,x)=>s+Number(x.estimated_value||0),0))}</strong></article><article><span>Conversion</span><strong>${conversion}%</strong></article><article><span>Overdue follow-ups</span><strong>${overdue}</strong></article><article><span>Visits this month</span><strong>${visits}</strong></article>`;const max=Math.max(1,...stages.map(s=>state.opportunities.filter(o=>o.stage===s).length));$("funnelReport").innerHTML=stages.map(s=>{const n=state.opportunities.filter(o=>o.stage===s).length;return `<div class="funnel-row"><span>${esc(s)}</span><div><i style="width:${Math.max(3,n/max*100)}%"></i></div><b>${n}</b></div>`}).join("");const due=base().reminders.filter(r=>!r.done).sort((a,b)=>new Date(a.when)-new Date(b.when));$("followupReport").innerHTML=`<div class="health-big ${overdue?'risk':'good'}"><strong>${overdue}</strong><span>overdue</span></div>${due.slice(0,5).map(r=>`<div class="mini-row"><span>${esc(r.text)}</span><b>${fmt(r.when)}</b></div>`).join("")||'<div class="empty">No pending follow-ups.</div>'}`;const health=base().colleges.map(c=>{let score=100;if(!c.nextAction)score-=30;if(!c.contactName)score-=20;if(c.blocker)score-=15;const last=combinedTimeline().find(x=>x.college.toLowerCase()===c.name.toLowerCase());if(!last||new Date(last.date)<new Date(Date.now()-14*86400000))score-=25;score=Math.max(0,score);return {c,score,last}}).sort((a,b)=>a.score-b.score);$("collegeHealthReport").innerHTML=health.map(x=>`<div class="health-row"><div><div class="title">${esc(x.c.name)}</div><div class="meta">Last activity: ${x.last?fmt(x.last.date):"Never"} · ${esc(x.c.nextAction||"No next action")}</div></div><div class="health-score ${x.score<50?'risk':x.score<75?'warn':'good'}">${x.score}</div></div>`).join("")||'<div class="empty">Add colleges to see account health.</div>'}
+function renderView(v){
+ if(v==="today")renderPulse();
+ else if(v==="pipeline")renderPipeline();
+ else if(v==="visits")renderVisits();
+ else if(v==="activity")renderActivity();
+ else if(v==="files")renderFiles();
+ else if(v==="reports")renderReports();
+}
 function renderAll(){renderPulse();renderPipeline();renderVisits();renderActivity();renderFiles();renderReports()}
 function exportReport(){const rows=[["College","Opportunity","Stage","Status","Probability","Estimated Value","Expected Close"]];state.opportunities.forEach(o=>rows.push([recordCollege(o),o.name,o.stage,o.status,o.probability,o.estimated_value,o.expected_close_date||""]));const csv=rows.map(r=>r.map(v=>`"${String(v??"").replace(/"/g,'""')}"`).join(",")).join("\n");const a=document.createElement("a"),blob=new Blob([csv],{type:"text/csv"});a.href=URL.createObjectURL(blob);a.download="harsha-crm-pipeline-report.csv";a.click();URL.revokeObjectURL(a.href)}
 function bind(){
@@ -252,10 +292,11 @@ function bind(){
  document.querySelectorAll("[data-pro-close]").forEach(b=>b.onclick=()=>close(b.dataset.proClose));
  $("visitForm").onsubmit=saveVisit;$("activityForm").onsubmit=saveActivity;$("opportunityForm").onsubmit=saveOpportunity;$("fileForm").onsubmit=saveFile;
  $("visitStatusFilter").onchange=renderVisits;$("visitSearch").oninput=renderVisits;$("activityTypeFilter").onchange=renderActivity;$("activitySearch").oninput=renderActivity;$("fileSearch").oninput=renderFiles;$("exportProReport").onclick=exportReport;
- document.querySelectorAll('[data-view="pipeline"],[data-view="visits"],[data-view="activity"],[data-view="files"],[data-view="reports"]').forEach(b=>b.addEventListener("click",()=>setTimeout(renderAll,0)));
 }
-async function init(){bind();if(user())await load()}
-window.HARSHA_CRM_PRO={load,renderAll,openCollegeTimeline,open};
+async function waitForSession(){for(let i=0;i<50;i++){if(user()&&sb())return true;await new Promise(r=>setTimeout(r,100))}return false}
+async function init(){bind();cacheLoad();renderAll();if(await waitForSession())load()}
+window.HARSHA_CRM_PRO={load,renderAll,renderView,openCollegeTimeline,open};
 window.addEventListener("harsha:app-ready",()=>load());
+window.addEventListener("harsha:base-data-ready",()=>{if(state.ready)renderAll();else load()});
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
 })();
