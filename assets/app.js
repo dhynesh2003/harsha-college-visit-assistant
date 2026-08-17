@@ -11,7 +11,7 @@ const localNow=()=>new Date(Date.now()-new Date().getTimezoneOffset()*60000).toI
 const CACHE_KEY="harsha_supabase_cache_v1";
 let sb=null,user=null,month=new Date(),selectedDay="",loadAllPromise=null;
 let db={colleges:[],contacts:[],meetings:[],reminders:[],requirements:[],calendarNotes:[]};
-let oneSignalReady=false,oneSignalInstance=null;
+let oneSignalReady=false,oneSignalInstance=null,oneSignalInitPromise=null;
 
 function cacheSave(){localStorage.setItem(CACHE_KEY,JSON.stringify(db))}
 function cacheLoad(){try{const x=JSON.parse(localStorage.getItem(CACHE_KEY));if(x)db={colleges:x.colleges||[],contacts:x.contacts||[],meetings:x.meetings||[],reminders:x.reminders||[],requirements:x.requirements||[],calendarNotes:x.calendarNotes||[]}}catch{}}
@@ -59,27 +59,46 @@ function showApp(){
 
 
 async function withOneSignal(fn){
-  return await new Promise((resolve,reject)=>{
-    if(!cfg.oneSignalAppId || cfg.oneSignalAppId.includes("PASTE_")) return reject(new Error("OneSignal App ID is not configured in assets/config.js."));
-    window.OneSignalDeferred=window.OneSignalDeferred||[];
-    window.OneSignalDeferred.push(async function(OneSignal){
-      try{
-        if(!oneSignalReady){
+  if(!cfg.oneSignalAppId || cfg.oneSignalAppId.includes("PASTE_")){
+    throw new Error("OneSignal App ID is not configured in assets/config.js.");
+  }
+
+  if(!oneSignalInitPromise){
+    oneSignalInitPromise=new Promise((resolve,reject)=>{
+      window.OneSignalDeferred=window.OneSignalDeferred||[];
+
+      window.OneSignalDeferred.push(async function(OneSignal){
+        try{
           await OneSignal.init({
             appId:cfg.oneSignalAppId,
             serviceWorkerPath:"push/onesignal/OneSignalSDKWorker.js",
-            serviceWorkerParam:{scope:"/push/onesignal/"},
-            notifyButton:{enable:false},
+            serviceWorkerParam:{
+              scope:"/push/onesignal/"
+            },
+            notifyButton:{
+              enable:false
+            },
             allowLocalhostAsSecureOrigin:["localhost","127.0.0.1"].includes(location.hostname)
           });
+
           oneSignalReady=true;
           oneSignalInstance=OneSignal;
+
+          resolve(OneSignal);
+
+        }catch(e){
+          oneSignalInitPromise=null;
+          reject(e);
         }
-        resolve(await fn(OneSignal));
-      }catch(e){reject(e)}
+      });
     });
-  });
+  }
+
+  const OneSignal=await oneSignalInitPromise;
+
+  return await fn(OneSignal);
 }
+
 async function initOneSignalForUser(){
   if(!user || !cfg.oneSignalAppId || cfg.oneSignalAppId.includes("PASTE_")){refreshNotificationCenter();return}
   try{
@@ -514,4 +533,5 @@ window.HARSHA_CRM={get sb(){return sb},get user(){return user},get db(){return d
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 init();
 })();
+
 
