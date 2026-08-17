@@ -258,16 +258,36 @@
 </div>
 
 <button id="mobileFab" class="fab mobile-only"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
-<nav class="bottom-nav mobile-only">
+<nav class="bottom-nav mobile-only" aria-label="Primary mobile navigation">
   <button class="active" data-view="today"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.8 12 3l9 7.8v9.2a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg><small>Today</small></button>
   <button data-view="colleges"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 21V7l8-4 8 4v14M8 10h2m4 0h2M8 14h2m4 0h2M8 18h8M2 21h20"/></svg><small>Colleges</small></button>
+  <button data-view="pipeline"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16M7 5v5h10V5M9 10v5h6v-5M11 15v4h2v-4"/></svg><small>Pipeline</small></button>
   <button data-view="calendar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2v4m12-4v4M3 9h18M5 4h14a2 2 0 0 1 2 2v15H3V6a2 2 0 0 1 2-2z"/><path d="M7 13h3v3H7zm7 0h3v3h-3z"/></svg><small>Calendar</small></button>
-  <button data-view="reminders"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><small>Reminders</small></button>
-  <button data-view="contacts"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><small>Contacts</small></button>
+  <button id="mobileMoreBtn" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg><small>More</small></button>
 </nav>
 </div>
 
 <div id="toast" class="toast"></div>
+
+<dialog id="mobileMoreDialog" class="mobile-more-dialog">
+  <div class="dialog-head"><div><h3>More</h3><p>All Visit Tracker sections</p></div><button type="button" class="close-btn" data-close="mobileMoreDialog">×</button></div>
+  <div class="dialog-body">
+    <div class="mobile-more-grid">
+      <button data-view="visits">Visits</button>
+      <button data-view="activity">Activity</button>
+      <button data-view="meetings">Meeting Notes</button>
+      <button data-view="contacts">Contacts</button>
+      <button data-view="reminders">Reminders</button>
+      <button data-view="requirements">Requirements</button>
+      <button data-view="files">Files</button>
+      <button data-view="reports">Reports</button>
+      <button data-view="notifications">Notifications</button>
+      <button data-view="settings">Backup & Settings</button>
+    </div>
+    <button class="btn danger mobile-signout" type="button" onclick="document.getElementById('signOutBtn').click()">Sign out</button>
+  </div>
+</dialog>
+
 
 
 <dialog id="visitDialog">
